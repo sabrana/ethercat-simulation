@@ -21,7 +21,7 @@
 /**
  * TODO - Generated class
  */
-class EtherCatMACMaster : public cSimpleModule
+class EtherCatMACMaster :EtherCatMAC, public cSimpleModule
 {
   protected:
     virtual void initialize();
