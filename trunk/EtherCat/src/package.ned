@@ -1,3 +1,3 @@
 package ethercat;
 
-@license(LGPL);
+@license(omnetpp);
