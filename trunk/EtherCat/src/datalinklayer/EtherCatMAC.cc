@@ -24,7 +24,7 @@ void EtherCatMAC::initialize()
 
 void EtherCatMAC::handleMessage(cMessage *msg)
 {
-    EV << "I'm EtherCatMACMaster and receive "<< msg << "\n";
+    EV << "I'm EtherCatMAC and receive "<< msg << "\n";
     send(msg,"upperLayerOut");
-    EV << "I'm EtherCatMACMaster and re-send "<< msg << "\n";
+    EV << "I'm EtherCatMAC and re-send "<< msg << "\n";
 }
