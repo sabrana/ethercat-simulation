@@ -1,8 +1,11 @@
 package ethercat.datalinklayer;
 
-simple EtherCatMACMaster extends EtherCatMAC
+simple EtherCatMACMaster 
 {
 	gates:
 		inout phys;
+		input upperLayerIn;
+        output upperLayerOut;
+		
 
 }

@@ -1,0 +1,1 @@
+-O2 -DNDEBUG=1   -I/usr/include -fno-stack-protector -DXMLPARSER=libxml -DWITH_PARSIM -DWITH_NETBUILDER  -I. -Iapplicationlayer -Idatalinklayer -Iphysicallayer -Ic:/Omnet++/omnetpp-4.2.2/include

@@ -28,7 +28,7 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
-OBJS = $O/applicationlayer/MasterApplication.o $O/applicationlayer/SlaveApplication.o $O/datalinklayer/EtherCatMAC.o $O/datalinklayer/EtherCatMACMaster.o $O/datalinklayer/EtherCatMACSlave.o
+OBJS = $O/applicationlayer/MasterApplication.o $O/applicationlayer/SlaveApplication.o $O/datalinklayer/EtherCatMACMaster.o $O/datalinklayer/EtherCatMACSlave.o
 
 # Message files
 MSGFILES =
@@ -116,8 +116,6 @@ $O/applicationlayer/MasterApplication.o: applicationlayer/MasterApplication.cc \
 	applicationlayer/MasterApplication.h
 $O/applicationlayer/SlaveApplication.o: applicationlayer/SlaveApplication.cc \
 	applicationlayer/SlaveApplication.h
-$O/datalinklayer/EtherCatMAC.o: datalinklayer/EtherCatMAC.cc \
-	datalinklayer/EtherCatMAC.h
 $O/datalinklayer/EtherCatMACMaster.o: datalinklayer/EtherCatMACMaster.cc \
 	datalinklayer/EtherCatMACMaster.h
 $O/datalinklayer/EtherCatMACSlave.o: datalinklayer/EtherCatMACSlave.cc \
