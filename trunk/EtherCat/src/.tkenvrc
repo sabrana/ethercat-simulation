@@ -1,3 +1,4 @@
 # Partial Tkenv config file -- see $HOME/.tkenvrc as well
 inspector "DaisyChain" "DaisyChain" "2" "565x341+25+25:normal"
+inspector "DaisyChain.master" "Master" "2" "565x341+192+165:normal"
 
