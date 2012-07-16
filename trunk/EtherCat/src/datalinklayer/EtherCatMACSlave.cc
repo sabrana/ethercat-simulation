@@ -42,7 +42,8 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         ethf->encapsulate((cPacket*)msg);
         ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
 
-        if(gate("phys2$o")->isConnected()){
+
+        if(gate("phys2$o")->getNextGate()->isConnected()){
             send(ethf,"phys2$o");
             EV << "I'm EtherCatMACSlave and send "<< ethf << "to other Slave\n";
         }else{
