@@ -24,5 +24,13 @@ void SlaveApplication::initialize()
 
 void SlaveApplication::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
+    EV << "I'm EtherCatApplicationSlave and receive payload "<< msg << "\n";
+    cPacket *payload = (cPacket*)msg;
+    srand ( time(NULL) );
+    int ns=rand() % 100;
+    _sleep((ns/100000)*payload->getByteLength());
+
+    send(msg,"out");
+    EV << "I'm MasterApplication and RE-send payload"<< msg << "\n";
+
 }
