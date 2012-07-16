@@ -15,6 +15,7 @@
 
 #include "EtherCatMACSlave.h"
 
+
 Define_Module(EtherCatMACSlave);
 
 void EtherCatMACSlave::initialize()
@@ -24,5 +25,34 @@ void EtherCatMACSlave::initialize()
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
+    EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
+    if(msg->getArrivalGate()==gate("phys1$i")){
+        EV << "I'm EtherCatMACSlave and receive ethf "<< msg << "\n";
+        cPacket *ethf = (cPacket*)msg;
+        cPacket *payload = ethf->decapsulate();
+        ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<payload->getByteLength() << endl; // --> 26+1498 = 1524
+        send(payload,"upperLayerOut");
+            EV << "I'm EtherCatMACSlave and send "<< ethf << "to my upperLayerOut\n";
+    }
+    else if(msg->getArrivalGate()==gate("upperLayerIn")){
+        EV << "I'm EtherCatMACSlave and receive psyload "<< msg << "\n";
+        cPacket *ethf = new cPacket("ethernet-frame"); // subclassed from cPacket
+        ethf->setByteLength(26);
+
+        ethf->encapsulate((cPacket*)msg);
+        ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
+
+        if(gate("phys2$o")->isConnected()){
+            send(ethf,"phys2$o");
+            EV << "I'm EtherCatMACSlave and send "<< ethf << "to other Slave\n";
+        }else{
+            EV << "I'm EtherCatMACSlave and finish chain"<<endl;
+            send(ethf,"phys1$o");
+        }
+    }else if(msg->getArrivalGate()==gate("phys2$i")){
+            EV << "I'm EtherCatMACSlave and receive return ethf "<< msg << "\n";
+            send(msg,"phys1$o");
+                EV << "I'm EtherCatMACSlave and send "<< msg << "to prev slave\n";
+        }
+
 }

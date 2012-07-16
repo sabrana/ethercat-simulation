@@ -19,14 +19,22 @@ Define_Module(EtherCatMACMaster);
 
 void EtherCatMACMaster::initialize()
 {
+
     // TODO - Generated method body
 }
 
-void EtherCatMACMaster::handleMessage(cMessage *msg)
+void EtherCatMACMaster::handleMessage(cMessage *payload)
 {
-    EV << "I'm EtherCatMACMaster and receive "<< msg << "\n";
-    send(msg,"upperLayerOut");
-    EV << "I'm EtherCatMACMaster and re-send "<< msg << "\n";
+    EV << "I'm EtherCatMACMaster and receive payload "<< payload << "\n";
+
+    cPacket *ethf = new cPacket("ethernet-frame"); // subclassed from cPacket
+    ethf->setByteLength(26);
+
+    ethf->encapsulate((cPacket*)payload);
+    ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
+
+    send(ethf,"phys$o");
+    EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
 }
 
 
