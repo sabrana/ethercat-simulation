@@ -19,9 +19,10 @@ Define_Module(MasterApplication);
 
 void MasterApplication::initialize()
 {
-    cMessage *msg=new cMessage("hello");
-    EV << "I'm MasterApplication and send "<< msg << "\n";
-    send(msg,"out");
+    cPacket *payload = new cPacket("payload");
+    payload->setByteLength(1498);
+    EV << "I'm MasterApplication and send payload"<< payload << "\n";
+    send(payload,"out");
 }
 
 void MasterApplication::handleMessage(cMessage *msg)
