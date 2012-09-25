@@ -25,41 +25,33 @@ void EtherCatMACMaster::initialize()
     // TODO - Generated method body
 }
 
-void EtherCatMACMaster::handleMessage(cMessage *payload)
+void EtherCatMACMaster::handleMessage(cMessage *msg)
 {
 
     //if(!payload->isSelfMessage()){
     //    scheduleAt(1.0, payload->dup());
     //}
     //else{
-    EV << "I'm EtherCatMACMaster and receive payload "<< payload << "\n";
-    EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
-    ethf->setByteLength(26);
-    ethf->encapsulate((cPacket*)payload);
-    //ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
-    //splitter(ethf);
-    send(ethf,"phys$o");
-    EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
     //}
+    EV << "I'm EtherCatMACMaster and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
+    if(msg->getArrivalGate()==gate("upperLayerIn")){
+        EV << "I'm EtherCatMACMaster and receive payload from MasterApplication Layer"<< msg << "\n";
+        EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
+        ethf->setByteLength(26);
+        ethf->encapsulate((cPacket*)msg);
+        ev << "I'm EtherCatMACMaster and encapsulate payload in EthernetFrame"<<ethf->getByteLength() << endl; // --> 26+1498 = 1524
+
+        //    send(ethf,"phys$o");
+        for(int i=0;i<ethf->getByteLength();i++){
+            cPacket *c=new cPacket();
+            c->setByteLength(1);
+            send(c,"phys$o");
+        }
+        EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
+    }else if(msg->getArrivalGate()==gate("phys$i")){
+        //da implementare
+    }
 }
-void EtherCatMACMaster::splitter(EthernetFrame *ethf){
-    split8 s;
-    split8 s2;
-   //s.getVector(ethf->getHeader(0));
-   // s.getVector(ethf->getHeader(8));
-    EV << "1:" << s.getBitLength() << endl;
-    EV << "2:" << s.getByteLength() << endl;
-    EV << "3:" << s.getClassName() << endl;
-    EV << "4:" << s.getContextPointer() << endl;
-    EV << "5:" << s.getControlInfo() << endl;
-    EV << "6:" << s.getDescriptor() << endl;
-    EV << "7:" << s.getFullName() << endl;
-    EV << "8:" << s.getVector(0) << endl;
-    EV << "9:" << s.getVectorArraySize() << endl;
-    EV << "10:" << s.getParList() << endl;
-    EV << "11:" << s.getParList() << endl;
-    //EV << "Header2:" << ethf->getHeader(3) << endl;
-    //EV << "HeaderSize:" <<ethf->getByteLength() << endl;
-}
+
 
 

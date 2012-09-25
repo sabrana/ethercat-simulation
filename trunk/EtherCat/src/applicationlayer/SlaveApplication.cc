@@ -25,7 +25,7 @@ void SlaveApplication::initialize()
 
 void SlaveApplication::handleMessage(cMessage *msg)
 {
-    EV << "I'm EtherCatApplicationSlave and receive payload "<< msg << "\n";
+    EV << "I'm EtherCatApplicationSlave and receive payload from SlaveMAC"<< msg << "\n";
     EtherCatFrame *payload = (EtherCatFrame*)msg;
     srand ( time(NULL) );
     int ns=rand() % 100;
