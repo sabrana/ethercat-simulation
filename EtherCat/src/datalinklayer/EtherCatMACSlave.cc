@@ -30,7 +30,9 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 {
     EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
     if(msg->getArrivalGate()==gate("phys1$i")){
-        EV << "I'm EtherCatMACSlave and receive ethf "<< msg << "\n";
+        EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
+
+
         EthernetFrame *ethf = (EthernetFrame*)msg;
         cPacket *payload = ethf->decapsulate();
 
