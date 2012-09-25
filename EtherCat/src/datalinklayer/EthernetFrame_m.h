@@ -19,13 +19,22 @@
  * Class generated from <tt>datalinklayer/EthernetFrame.msg</tt> by opp_msgc.
  * <pre>
  * packet EthernetFrame{
- * 
+ * 	char Preamble[7];
+ * 	char SFD[1];
+ * 	char MACaddr[6];
+ * 	char MACsrc[6];
+ * 	char FCS[4];
  * }
  * </pre>
  */
 class EthernetFrame : public ::cPacket
 {
   protected:
+    char Preamble_var[7];
+    char SFD_var[1];
+    char MACaddr_var[6];
+    char MACsrc_var[6];
+    char FCS_var[4];
 
   private:
     void copy(const EthernetFrame& other);
@@ -44,6 +53,21 @@ class EthernetFrame : public ::cPacket
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
+    virtual unsigned int getPreambleArraySize() const;
+    virtual char getPreamble(unsigned int k) const;
+    virtual void setPreamble(unsigned int k, char Preamble);
+    virtual unsigned int getSFDArraySize() const;
+    virtual char getSFD(unsigned int k) const;
+    virtual void setSFD(unsigned int k, char SFD);
+    virtual unsigned int getMACaddrArraySize() const;
+    virtual char getMACaddr(unsigned int k) const;
+    virtual void setMACaddr(unsigned int k, char MACaddr);
+    virtual unsigned int getMACsrcArraySize() const;
+    virtual char getMACsrc(unsigned int k) const;
+    virtual void setMACsrc(unsigned int k, char MACsrc);
+    virtual unsigned int getFCSArraySize() const;
+    virtual char getFCS(unsigned int k) const;
+    virtual void setFCS(unsigned int k, char FCS);
 };
 
 inline void doPacking(cCommBuffer *b, EthernetFrame& obj) {obj.parsimPack(b);}

@@ -13,20 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ETHERCAT_MASTERAPPLICATION_H_
-#define __ETHERCAT_MASTERAPPLICATION_H_
-
-#include <omnetpp.h>
-
-/**
- * TODO - Generated class
- */
-class MasterApplication : public cSimpleModule
-{
-  protected:
-    cStdDev eedStats;
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
-};
-
-#endif
+//
+// TODO generated message class
+//
+packet EtherCatFrame {
+    //int[2] FrameHDR;
+    //int[10] EtherCatHDR;
+    //int[] data;
+    //int[2] WCC;
+    int data;
+   
+}

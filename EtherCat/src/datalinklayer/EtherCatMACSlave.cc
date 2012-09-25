@@ -14,6 +14,9 @@
 // 
 
 #include "EtherCatMACSlave.h"
+#include "EthernetFrame_m.h"
+#include "split8_m.h"
+
 
 
 Define_Module(EtherCatMACSlave);
@@ -28,16 +31,18 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
     if(msg->getArrivalGate()==gate("phys1$i")){
         EV << "I'm EtherCatMACSlave and receive ethf "<< msg << "\n";
-        cPacket *ethf = (cPacket*)msg;
+        EthernetFrame *ethf = (EthernetFrame*)msg;
         cPacket *payload = ethf->decapsulate();
+
         ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<payload->getByteLength() << endl; // --> 26+1498 = 1524
         send(payload,"upperLayerOut");
-            EV << "I'm EtherCatMACSlave and send "<< ethf << "to my upperLayerOut\n";
+        EV << "I'm EtherCatMACSlave and send "<< ethf << "to my upperLayerOut\n";
     }
     else if(msg->getArrivalGate()==gate("upperLayerIn")){
         EV << "I'm EtherCatMACSlave and receive psyload "<< msg << "\n";
-        cPacket *ethf = new cPacket("ethernet-frame"); // subclassed from cPacket
+        EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
         ethf->setByteLength(26);
+
 
         ethf->encapsulate((cPacket*)msg);
         ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
@@ -57,3 +62,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         }
 
 }
+void EtherCatMACSlave::splitter(cMessage *msg){
+}
+
+

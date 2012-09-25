@@ -7,6 +7,5 @@ simple EtherCatMACSlave
         inout phys1;
         inout phys2;
         input upperLayerIn;
-        output upperLayerOut;
-    
+        output upperLayerOut;   
 }
