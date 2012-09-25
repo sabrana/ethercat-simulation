@@ -14,7 +14,7 @@
 // 
 
 #include "SlaveApplication.h"
-#include "EtherCatFrame_m.h"
+
 
 Define_Module(SlaveApplication);
 
@@ -29,7 +29,7 @@ void SlaveApplication::handleMessage(cMessage *msg)
     EtherCatFrame *payload = (EtherCatFrame*)msg;
     srand ( time(NULL) );
     int ns=rand() % 100;
-    _sleep((ns/100000)*payload->getByteLength());
+    sleep((ns/100000)*payload->getByteLength());
     send(msg,"out");
     EV << "I'm MasterApplication and RE-send payload"<< msg << "\n";
 

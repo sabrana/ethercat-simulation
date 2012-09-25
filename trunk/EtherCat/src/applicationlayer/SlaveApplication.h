@@ -16,7 +16,10 @@
 #ifndef __ETHERCAT_SLAVEAPPLICATION_H_
 #define __ETHERCAT_SLAVEAPPLICATION_H_
 
+#include <stdio.h>
 #include <omnetpp.h>
+#include "EtherCatFrame_m.h"
+
 
 /**
  * TODO - Generated class
