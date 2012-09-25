@@ -8,16 +8,19 @@ network DaisyChain
 {
     parameters:
         int n = default(5);
+        @display("bgb=523,309;bgl=8");
     submodules:
-        
-        master: Master;
+
+        master: Master {
+            @display("is=s;p=253,54");
+        }
         slave[n]: Slave {
-            @display("p=,,ring,");
-            
+            @display("p=253,122,ring");
+
         }
 
     connections allowunconnected:
-        master.gate  <--> EthernetLine <--> slave[0].prev;
+        master.gate <--> EthernetLine <--> slave[0].prev;
         for i=0..n-2 {
             slave[i].next <--> EthernetLine <--> slave[(i+1)].prev;
         }
