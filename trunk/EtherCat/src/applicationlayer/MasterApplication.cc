@@ -14,19 +14,32 @@
 // 
 
 #include "MasterApplication.h"
+#include "EtherCatFrame_m.h"
 
 Define_Module(MasterApplication);
 
 void MasterApplication::initialize()
 {
-    cPacket *payload = new cPacket("payload");
+    EtherCatFrame *payload = new EtherCatFrame("payload");
     payload->setByteLength(1498);
     EV << "I'm MasterApplication and send payload"<< payload << "\n";
     send(payload,"out");
+    //scheduleAt(5.0, payload->dup());
+
 }
 
 void MasterApplication::handleMessage(cMessage *msg)
 {
+
     EV << "I'm MasterApplication and re-send "<< msg << "\n";
     send(msg,"out");
+
+    /*ASSERT(msg->isSelfMessage());
+        delete msg;
+    EtherCatFrame *payload = new EtherCatFrame("payload");
+    //int n = par("numJobs");
+    for (int i=0; i<5; i++)
+    {
+        send(payload->dup(), "out");
+    }*/
 }

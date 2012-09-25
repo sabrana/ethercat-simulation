@@ -14,6 +14,8 @@
 // 
 
 #include "EtherCatMACMaster.h"
+#include "EthernetFrame_m.h"
+#include "split8_m.h"
 
 Define_Module(EtherCatMACMaster);
 
@@ -25,16 +27,39 @@ void EtherCatMACMaster::initialize()
 
 void EtherCatMACMaster::handleMessage(cMessage *payload)
 {
+
+    //if(!payload->isSelfMessage()){
+    //    scheduleAt(1.0, payload->dup());
+    //}
+    //else{
     EV << "I'm EtherCatMACMaster and receive payload "<< payload << "\n";
-
-    cPacket *ethf = new cPacket("ethernet-frame"); // subclassed from cPacket
+    EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
     ethf->setByteLength(26);
-
     ethf->encapsulate((cPacket*)payload);
-    ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
-
+    //ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
+    //splitter(ethf);
     send(ethf,"phys$o");
     EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
+    //}
+}
+void EtherCatMACMaster::splitter(EthernetFrame *ethf){
+    split8 s;
+    split8 s2;
+   //s.getVector(ethf->getHeader(0));
+   // s.getVector(ethf->getHeader(8));
+    EV << "1:" << s.getBitLength() << endl;
+    EV << "2:" << s.getByteLength() << endl;
+    EV << "3:" << s.getClassName() << endl;
+    EV << "4:" << s.getContextPointer() << endl;
+    EV << "5:" << s.getControlInfo() << endl;
+    EV << "6:" << s.getDescriptor() << endl;
+    EV << "7:" << s.getFullName() << endl;
+    EV << "8:" << s.getVector(0) << endl;
+    EV << "9:" << s.getVectorArraySize() << endl;
+    EV << "10:" << s.getParList() << endl;
+    EV << "11:" << s.getParList() << endl;
+    //EV << "Header2:" << ethf->getHeader(3) << endl;
+    //EV << "HeaderSize:" <<ethf->getByteLength() << endl;
 }
 
 

@@ -17,6 +17,7 @@
 #define __ETHERCAT_ETHERCATMACMASTER_H_
 
 #include <omnetpp.h>
+#include "EthernetFrame_m.h"
 
 /**
  * TODO - Generated class
@@ -26,6 +27,7 @@ class EtherCatMACMaster : public cSimpleModule
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+    virtual void splitter(EthernetFrame *ethf);
 };
 
 #endif

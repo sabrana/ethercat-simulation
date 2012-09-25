@@ -14,5 +14,11 @@
 //
 
 packet EthernetFrame{
-
+	char Preamble[7];
+	char SFD[1];
+	char MACaddr[6];
+	char MACsrc[6];
+	char FCS[4];
 }
+
+
