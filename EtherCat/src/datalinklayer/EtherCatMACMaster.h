@@ -27,7 +27,6 @@ class EtherCatMACMaster : public cSimpleModule
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    virtual void splitter(EthernetFrame *ethf);
 };
 
 #endif
