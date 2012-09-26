@@ -42,6 +42,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
         ev << "I'm EtherCatMACMaster and encapsulate payload in EthernetFrame"<<ethf->getByteLength() << endl; // --> 26+1498 = 1524
 
         //    send(ethf,"phys$o");
+
         for(int i=0;i<ethf->getByteLength();i++){
             cPacket *c=new cPacket();
             c->setByteLength(1);

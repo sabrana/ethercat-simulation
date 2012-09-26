@@ -33,29 +33,31 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
 
 
-        EthernetFrame *ethf = (EthernetFrame*)msg;
-        cPacket *payload = ethf->decapsulate();
+        //EthernetFrame *ethf = (EthernetFrame*)msg;
+        //cPacket *payload = ethf->decapsulate();
 
-        ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<payload->getByteLength() << endl; // --> 26+1498 = 1524
-        send(payload,"upperLayerOut");
-        EV << "I'm EtherCatMACSlave and send "<< ethf << "to my upperLayerOut\n";
+        cPacket *byte = (cPacket*)msg;
+
+        ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl; // --> 26+1498 = 1524
+        send(byte,"upperLayerOut");
+        EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
     }
     else if(msg->getArrivalGate()==gate("upperLayerIn")){
         EV << "I'm EtherCatMACSlave and receive psyload "<< msg << "\n";
-        EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
-        ethf->setByteLength(26);
+        //EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
+        //ethf->setByteLength(26);
 
 
-        ethf->encapsulate((cPacket*)msg);
-        ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
+        //ethf->encapsulate((cPacket*)msg);
+        //ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
 
 
         if(gate("phys2$o")->getNextGate()->isConnected()){
-            send(ethf,"phys2$o");
-            EV << "I'm EtherCatMACSlave and send "<< ethf << "to other Slave\n";
+            send(msg,"phys2$o");
+            EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
         }else{
             EV << "I'm EtherCatMACSlave and finish chain"<<endl;
-            send(ethf,"phys1$o");
+            send(msg,"phys1$o");
         }
     }else if(msg->getArrivalGate()==gate("phys2$i")){
             EV << "I'm EtherCatMACSlave and receive return ethf "<< msg << "\n";
