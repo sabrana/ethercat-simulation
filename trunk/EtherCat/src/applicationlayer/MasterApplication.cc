@@ -20,6 +20,8 @@ Define_Module(MasterApplication);
 
 void MasterApplication::initialize()
 {
+
+
     EtherCatFrame *payload = new EtherCatFrame("payload");
     payload->setByteLength(1498);//Ethercat Datagram
     EV << "I'm MasterApplication and send payload"<< payload << "\n";

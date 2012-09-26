@@ -6,6 +6,6 @@ simple EtherCatMACMaster
 		inout phys;
 		input upperLayerIn;
         output upperLayerOut;
-		
+	
 
 }
