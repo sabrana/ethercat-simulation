@@ -19,14 +19,46 @@
 
 Define_Module(EtherCatMACMaster);
 
+EtherCatMACMaster::EtherCatMACMaster()
+{
+    // Set the pointer to NULL, so that the destructor won't crash
+    // even if initialize() doesn't get called because of a runtime
+    // error or user cancellation during the startup process.
+    event = tempMsg = NULL;
+}
+
+EtherCatMACMaster::~EtherCatMACMaster()
+{
+    // Dispose of dynamically allocated the objects
+    cancelAndDelete(event);
+    delete tempMsg;
+}
+
+
 void EtherCatMACMaster::initialize()
 {
 
-    // TODO - Generated method body
+    // Create the event object we'll use for timing -- just any ordinary message.
+        event = new cMessage("event");
+
+        // No tictoc message yet.
+        tempMsg = NULL;
+
+
+            // We don't start right away, but instead send an message to ourselves
+            // (a "self-message") -- we'll do the first sending when it arrives
+            // back to us, at t=5.0s simulated time.
+
+
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
 {
+
+    if (msg==event){
+        EV << "I'm EtherCatMACMaster and receive event msg" << endl;
+        send(tempMsg,"phys$o");
+    }
 
     //if(!payload->isSelfMessage()){
     //    scheduleAt(1.0, payload->dup());
@@ -43,11 +75,23 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
         //    send(ethf,"phys$o");
 
-        for(int i=0;i<ethf->getByteLength();i++){
+        cPacket *c=new cPacket();
+        c->setByteLength(1);
+
+        EV << "Scheduling first send to t=5.0s\n";
+        tempMsg = c;
+        scheduleAt(5.0, event);
+
+        /*for(int i=0;i<ethf->getByteLength();i++){
+
+
+
             cPacket *c=new cPacket();
             c->setByteLength(1);
             send(c,"phys$o");
-        }
+
+
+        }*/
         EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
     }else if(msg->getArrivalGate()==gate("phys$i")){
         //da implementare
