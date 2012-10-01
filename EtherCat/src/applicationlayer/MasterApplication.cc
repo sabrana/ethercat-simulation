@@ -36,12 +36,5 @@ void MasterApplication::handleMessage(cMessage *msg)
     EV << "I'm MasterApplication and re-send "<< msg << "\n";
     send(msg,"out");
 
-    /*ASSERT(msg->isSelfMessage());
-        delete msg;
-    EtherCatFrame *payload = new EtherCatFrame("payload");
-    //int n = par("numJobs");
-    for (int i=0; i<5; i++)
-    {
-        send(payload->dup(), "out");
-    }*/
+
 }

@@ -55,17 +55,11 @@ void EtherCatMACMaster::initialize()
 void EtherCatMACMaster::handleMessage(cMessage *msg)
 {
 
-    if (msg==event){
+    if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
-        send(tempMsg,"phys$o");
+        send(tempMsg->dup(),"phys$o");
     }
 
-    //if(!payload->isSelfMessage()){
-    //    scheduleAt(1.0, payload->dup());
-    //}
-    //else{
-    //}
-    EV << "I'm EtherCatMACMaster and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
     if(msg->getArrivalGate()==gate("upperLayerIn")){
         EV << "I'm EtherCatMACMaster and receive payload from MasterApplication Layer"<< msg << "\n";
         EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
@@ -73,29 +67,26 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
         ethf->encapsulate((cPacket*)msg);
         ev << "I'm EtherCatMACMaster and encapsulate payload in EthernetFrame"<<ethf->getByteLength() << endl; // --> 26+1498 = 1524
 
-        //    send(ethf,"phys$o");
 
         cPacket *c=new cPacket();
         c->setByteLength(1);
 
         EV << "Scheduling first send to t=5.0s\n";
         tempMsg = c;
-        scheduleAt(5.0, event);
-
-        /*for(int i=0;i<ethf->getByteLength();i++){
 
 
+          for (int i=1; i<=ethf->getByteLength(); i++){
+                ev << "Adding other consecutives packets n" ;
+           scheduleAt(simTime()+uniform(0,1)*i, event->dup());
+           }
 
-            cPacket *c=new cPacket();
-            c->setByteLength(1);
-            send(c,"phys$o");
 
 
-        }*/
+
         EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
-    }else if(msg->getArrivalGate()==gate("phys$i")){
+   }else if(msg->getArrivalGate()==gate("phys$i")){
         //da implementare
-    }
+   }
 }
 
 

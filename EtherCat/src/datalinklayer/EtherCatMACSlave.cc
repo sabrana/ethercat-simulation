@@ -17,19 +17,49 @@
 #include "EthernetFrame_m.h"
 #include "split8_m.h"
 
+EtherCatMACSlave::EtherCatMACSlave()
+{
+    // Set the pointer to NULL, so that the destructor won't crash
+    // even if initialize() doesn't get called because of a runtime
+    // error or user cancellation during the startup process.
+    event = tempMsg = NULL;
+}
 
+EtherCatMACSlave::~EtherCatMACSlave()
+{
+    // Dispose of dynamically allocated the objects
+    cancelAndDelete(event);
+    delete tempMsg;
+}
 
 Define_Module(EtherCatMACSlave);
 
 void EtherCatMACSlave::initialize()
 {
-    // TODO - Generated method body
+    event = new cMessage("event");
+    tempMsg = NULL;
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
 {
-    EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
-    if(msg->getArrivalGate()==gate("phys1$i")){
+    EV << "4. debug\n";
+    //EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
+
+    if(msg->isSelfMessage()){
+        EV << "5. debug\n";
+            EV << "I'm EtherCatMACSlave and receive pyload "<< msg << "\n";
+
+
+
+            if(gate("phys2$o")->getNextGate()->isConnected()){
+                send(tempMsg->dup(),"phys2$o");
+                EV << "I'm EtherCatMACSlave and send "<< tempMsg << "to other Slave\n";
+            }else{
+                EV << "I'm EtherCatMACSlave and finish chain"<<endl;
+                send(tempMsg->dup(),"phys1$o");
+            }
+        }
+    else if(msg->getArrivalGate()==gate("phys1$i")){
         EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
 
 
@@ -41,32 +71,23 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl; // --> 26+1498 = 1524
         send(byte,"upperLayerOut");
         EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
-    }
-    else if(msg->getArrivalGate()==gate("upperLayerIn")){
-        EV << "I'm EtherCatMACSlave and receive psyload "<< msg << "\n";
-        //EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
-        //ethf->setByteLength(26);
+
+    }else if(msg->getArrivalGate()==gate("upperLayerIn")){
+        EV << "1. debug\n";
+        tempMsg = msg->dup();
+        EV << "2. debug\n";
+        scheduleAt(simTime()+uniform(0,1), event->dup());
+        EV << "3. debug\n";
 
 
-        //ethf->encapsulate((cPacket*)msg);
-        //ev << ethf->getByteLength() << endl; // --> 26+1498 = 1524
-
-
-        if(gate("phys2$o")->getNextGate()->isConnected()){
-            send(msg,"phys2$o");
-            EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
-        }else{
-            EV << "I'm EtherCatMACSlave and finish chain"<<endl;
-            send(msg,"phys1$o");
-        }
     }else if(msg->getArrivalGate()==gate("phys2$i")){
-            EV << "I'm EtherCatMACSlave and receive return ethf "<< msg << "\n";
+            EV << "I'm EtherCatMACSlave and receive return ethf "<< tempMsg << "\n";
             send(msg,"phys1$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to prev slave\n";
         }
+    else
+        EV << "Error"<<endl;
+}
 
-}
-void EtherCatMACSlave::splitter(cMessage *msg){
-}
 
 
