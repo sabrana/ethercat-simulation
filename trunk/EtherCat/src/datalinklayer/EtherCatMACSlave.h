@@ -23,10 +23,16 @@
  */
 class EtherCatMACSlave : public cSimpleModule
 {
+  private:
+    cMessage *event; // pointer to the event object which we'll use for timing
+    cMessage *tempMsg; // variable to remember the message until we send it back
+  public:
+    EtherCatMACSlave();
+    virtual ~EtherCatMACSlave();
+
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    virtual void splitter(cMessage *msg);
 };
 
 #endif

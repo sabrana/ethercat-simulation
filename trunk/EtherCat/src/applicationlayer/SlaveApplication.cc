@@ -28,9 +28,6 @@ void SlaveApplication::handleMessage(cMessage *msg)
     EV << "I'm EtherCatApplicationSlave and receive payload from SlaveMAC"<< msg << "\n";
     cPacket *byte = (cPacket*)msg;
     //EtherCatFrame *payload = (EtherCatFrame*)msg;
-    srand ( time(NULL) );
-    int ns=rand() % 100;
-    sleep((ns/100000)*byte->getByteLength());
     send(byte,"out");
     EV << "I'm MasterApplication and RE-send payload"<< byte << "\n";
 
