@@ -36,17 +36,16 @@ Define_Module(EtherCatMACSlave);
 
 void EtherCatMACSlave::initialize()
 {
+    delay=par("delay");
     event = new cMessage("event");
     tempMsg = NULL;
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
 {
-    EV << "4. debug\n";
     //EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
 
     if(msg->isSelfMessage()){
-        EV << "5. debug\n";
             EV << "I'm EtherCatMACSlave and receive pyload "<< msg << "\n";
 
 
@@ -73,11 +72,9 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
 
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
-        EV << "1. debug\n";
         tempMsg = msg->dup();
-        EV << "2. debug\n";
-        scheduleAt(simTime()+uniform(0,1), event->dup());
-        EV << "3. debug\n";
+        scheduleAt(simTime()+delay, event->dup());
+        //scheduleAt(simTime()+uniform(0,1), event->dup());
 
 
     }else if(msg->getArrivalGate()==gate("phys2$i")){
