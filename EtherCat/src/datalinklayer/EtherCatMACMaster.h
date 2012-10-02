@@ -25,8 +25,7 @@
 class EtherCatMACMaster : public cSimpleModule
 {
   private:
-      cMessage *event; // pointer to the event object which we'll use for timing
-      cMessage *tempMsg; // variable to remember the message until we send it back
+      simtime_t delay;
   public:
     EtherCatMACMaster();
     virtual ~EtherCatMACMaster();

@@ -8,11 +8,14 @@ network DaisyChain
 {
     parameters:
         int n = default(5);
+        master.mac.delay = default(1);
+        slave[*].mac.delay = default(1);
         @display("bgb=523,309;bgl=8");
     submodules:
 
         master: Master {
             @display("is=s;p=253,54");
+
         }
         slave[n]: Slave {
             @display("p=253,122,ring");

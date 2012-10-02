@@ -21,33 +21,21 @@ Define_Module(EtherCatMACMaster);
 
 EtherCatMACMaster::EtherCatMACMaster()
 {
-    // Set the pointer to NULL, so that the destructor won't crash
-    // even if initialize() doesn't get called because of a runtime
-    // error or user cancellation during the startup process.
-    event = tempMsg = NULL;
+
 }
 
 EtherCatMACMaster::~EtherCatMACMaster()
 {
     // Dispose of dynamically allocated the objects
-    cancelAndDelete(event);
-    delete tempMsg;
 }
 
 
 void EtherCatMACMaster::initialize()
 {
 
-    // Create the event object we'll use for timing -- just any ordinary message.
-        event = new cMessage("event");
 
-        // No tictoc message yet.
-        tempMsg = NULL;
+        delay=par("delay");
 
-
-            // We don't start right away, but instead send an message to ourselves
-            // (a "self-message") -- we'll do the first sending when it arrives
-            // back to us, at t=5.0s simulated time.
 
 
 }
@@ -57,33 +45,83 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
     if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
-        send(tempMsg->dup(),"phys$o");
+
+                send(msg->dup(),"phys$o");
+
+
     }
 
     if(msg->getArrivalGate()==gate("upperLayerIn")){
         EV << "I'm EtherCatMACMaster and receive payload from MasterApplication Layer"<< msg << "\n";
         EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
-        ethf->setByteLength(26);
-        ethf->encapsulate((cPacket*)msg);
-        ev << "I'm EtherCatMACMaster and encapsulate payload in EthernetFrame"<<ethf->getByteLength() << endl; // --> 26+1498 = 1524
-
-
-        cPacket *c=new cPacket();
-        c->setByteLength(1);
 
         EV << "Scheduling first send to t=5.0s\n";
-        tempMsg = c;
 
 
-          for (int i=1; i<=ethf->getByteLength(); i++){
-                ev << "Adding other consecutives packets n" ;
-           scheduleAt(simTime()+uniform(0,1)*i, event->dup());
-           }
+            int byte=1;
+
+            //preamble ethernet frame
+            for(byte; byte<=7; byte++){
+                //preamble ethernet frame
+                ev << "Adding " << byte <<" /7 packet of preamble ethernet frame";
+                cPacket *c=new cPacket("Preamble");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //SFD ethernet frame
+            for(byte; byte<=8; byte++){
+                ev << "Adding " << byte-7 <<"/1 packet of SFD ethernet frame";
+                cPacket *c=new cPacket("SFD");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //Destination MAC Address ethernet frame
+            for(byte; byte<=14; byte++){
+                //preamble ethernet frame
+                ev << "Adding " << byte-8 <<" /6 packet of DA ethernet frame";
+                cPacket *c=new cPacket("DA");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //Source MAC Address ethernet frame
+            for(byte; byte<=20; byte++){
+                //preamble ethernet frame
+                ev << "Adding " << byte-14 <<" /6 packet of SA ethernet frame";
+                cPacket *c=new cPacket("SA");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //EtherType ethernet frame
+            for(byte; byte<=22; byte++){
+                ev << "Adding " << byte-16 <<" /2 packet of EtherType ethernet frame";
+                cPacket *c=new cPacket("EtherType");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //PayLoad ethernet frame
+            for(byte; byte<=1498+22; byte++){
+                ev << "Adding " << byte-22 <<" /1498 packet of PayLoad ethernet frame";
+                cPacket *c=new cPacket("PayLoad");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+            //FCS ethernet frame
+            for(byte; byte<=1498+26; byte++){
+                ev << "Adding " << byte-(1498+22) <<" /4 packet of FCS ethernet frame";
+                cPacket *c=new cPacket("FCS");
+                c->setByteLength(1);
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
 
 
 
 
-        EV << "I'm EtherCatMACMaster and send "<< ethf << "to Slave\n";
    }else if(msg->getArrivalGate()==gate("phys$i")){
         //da implementare
    }
