@@ -26,6 +26,14 @@ class EtherCatMACMaster : public cSimpleModule
 {
   private:
       simtime_t delay;
+      int type1;
+      int type2;
+      int type3;
+      int type4;
+      int type5;
+      int type6;
+      int type7;
+      int byteReturn;
   public:
     EtherCatMACMaster();
     virtual ~EtherCatMACMaster();
@@ -33,6 +41,7 @@ class EtherCatMACMaster : public cSimpleModule
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
 
 };
