@@ -16,13 +16,29 @@
 
 
 /**
+ * Struct generated from applicationlayer/EtherCatFrame.msg by opp_msgc.
+ */
+struct type12PDU
+{
+    type12PDU();
+    int prova;
+};
+
+void doPacking(cCommBuffer *b, type12PDU& a);
+void doUnpacking(cCommBuffer *b, type12PDU& a);
+
+/**
  * Class generated from <tt>applicationlayer/EtherCatFrame.msg</tt> by opp_msgc.
  * <pre>
  * packet EtherCatFrame {
+ *     int lenght;
+ *     char reserved;
+ *     char type;
  *     
  *     
  *     
  *     
+ *     type12PDU pdu[10];
  *     int data;
  *    
  * }
@@ -31,6 +47,10 @@
 class EtherCatFrame : public ::cPacket
 {
   protected:
+    int lenght_var;
+    char reserved_var;
+    char type_var;
+    type12PDU pdu_var[10];
     int data_var;
 
   private:
@@ -50,6 +70,16 @@ class EtherCatFrame : public ::cPacket
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
+    virtual int getLenght() const;
+    virtual void setLenght(int lenght);
+    virtual char getReserved() const;
+    virtual void setReserved(char reserved);
+    virtual char getType() const;
+    virtual void setType(char type);
+    virtual unsigned int getPduArraySize() const;
+    virtual type12PDU& getPdu(unsigned int k);
+    virtual const type12PDU& getPdu(unsigned int k) const {return const_cast<EtherCatFrame*>(this)->getPdu(k);}
+    virtual void setPdu(unsigned int k, const type12PDU& pdu);
     virtual int getData() const;
     virtual void setData(int data);
 };
