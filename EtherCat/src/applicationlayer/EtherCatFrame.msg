@@ -16,11 +16,16 @@
 //
 // TODO generated message class
 //
+struct type12PDU
+{
+    int prova;
+}
+
 packet EtherCatFrame {
-    //int[2] FrameHDR;
-    //int[10] EtherCatHDR;
-    //int[] data;
-    //int[2] WCC;
+    int lenght;
+    char reserved;
+    char type;
+    type12PDU pdu[10];
     int data;
    
 }
