@@ -23,7 +23,8 @@ void MasterApplication::initialize()
 
 
     EtherCatFrame *payload = new EtherCatFrame("payload");
-    payload->setByteLength(1498);//Ethercat Datagram
+    payload->setByteLength(1500);//Ethercat Datagram
+    payload->setData(10);
     EV << "I'm MasterApplication and send payload"<< payload << "\n";
     send(payload,"out");
     //scheduleAt(5.0, payload->dup());

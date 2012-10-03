@@ -18,7 +18,17 @@
 //
 struct type12PDU
 {
-    int prova;
+    unsigned char CMD; // 0x01 command APRD
+    unsigned char IDX; // Index
+    short ADP; // auto increment address
+    short ADO; // Physical memory or register address
+    int LEN; // unsigned 11bit
+    char reserved; // unsigned 3bit
+    bool C;// unsigned 1bit
+    bool NEXT; // unsigned 1bit
+    short IRQ; //External event 
+    char DATA; // Data, structure as specified in 5.6, 6 or by DLS-user
+    short WKC; //Working counter
 }
 
 packet EtherCatFrame {

@@ -18,6 +18,7 @@
 
 #include <omnetpp.h>
 #include "EthernetFrame_m.h"
+#include "../applicationlayer/EtherCatFrame_m.h"
 
 /**
  * TODO - Generated class
@@ -34,6 +35,7 @@ class EtherCatMACMaster : public cSimpleModule
       int type6;
       int type7;
       int byteReturn;
+      int valueData;
   public:
     EtherCatMACMaster();
     virtual ~EtherCatMACMaster();
