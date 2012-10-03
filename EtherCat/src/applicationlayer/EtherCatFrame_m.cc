@@ -32,17 +32,47 @@ void doUnpacking(cCommBuffer *, T& t) {
 
 type12PDU::type12PDU()
 {
-    prova = 0;
+    CMD = 0;
+    IDX = 0;
+    ADP = 0;
+    ADO = 0;
+    LEN = 0;
+    reserved = 0;
+    C = 0;
+    NEXT = 0;
+    IRQ = 0;
+    DATA = 0;
+    WKC = 0;
 }
 
 void doPacking(cCommBuffer *b, type12PDU& a)
 {
-    doPacking(b,a.prova);
+    doPacking(b,a.CMD);
+    doPacking(b,a.IDX);
+    doPacking(b,a.ADP);
+    doPacking(b,a.ADO);
+    doPacking(b,a.LEN);
+    doPacking(b,a.reserved);
+    doPacking(b,a.C);
+    doPacking(b,a.NEXT);
+    doPacking(b,a.IRQ);
+    doPacking(b,a.DATA);
+    doPacking(b,a.WKC);
 }
 
 void doUnpacking(cCommBuffer *b, type12PDU& a)
 {
-    doUnpacking(b,a.prova);
+    doUnpacking(b,a.CMD);
+    doUnpacking(b,a.IDX);
+    doUnpacking(b,a.ADP);
+    doUnpacking(b,a.ADO);
+    doUnpacking(b,a.LEN);
+    doUnpacking(b,a.reserved);
+    doUnpacking(b,a.C);
+    doUnpacking(b,a.NEXT);
+    doUnpacking(b,a.IRQ);
+    doUnpacking(b,a.DATA);
+    doUnpacking(b,a.WKC);
 }
 
 class type12PDUDescriptor : public cClassDescriptor
@@ -92,7 +122,7 @@ const char *type12PDUDescriptor::getProperty(const char *propertyname) const
 int type12PDUDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 1+basedesc->getFieldCount(object) : 1;
+    return basedesc ? 11+basedesc->getFieldCount(object) : 11;
 }
 
 unsigned int type12PDUDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -105,8 +135,18 @@ unsigned int type12PDUDescriptor::getFieldTypeFlags(void *object, int field) con
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<11) ? fieldTypeFlags[field] : 0;
 }
 
 const char *type12PDUDescriptor::getFieldName(void *object, int field) const
@@ -118,16 +158,36 @@ const char *type12PDUDescriptor::getFieldName(void *object, int field) const
         field -= basedesc->getFieldCount(object);
     }
     static const char *fieldNames[] = {
-        "prova",
+        "CMD",
+        "IDX",
+        "ADP",
+        "ADO",
+        "LEN",
+        "reserved",
+        "C",
+        "NEXT",
+        "IRQ",
+        "DATA",
+        "WKC",
     };
-    return (field>=0 && field<1) ? fieldNames[field] : NULL;
+    return (field>=0 && field<11) ? fieldNames[field] : NULL;
 }
 
 int type12PDUDescriptor::findField(void *object, const char *fieldName) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
-    if (fieldName[0]=='p' && strcmp(fieldName, "prova")==0) return base+0;
+    if (fieldName[0]=='C' && strcmp(fieldName, "CMD")==0) return base+0;
+    if (fieldName[0]=='I' && strcmp(fieldName, "IDX")==0) return base+1;
+    if (fieldName[0]=='A' && strcmp(fieldName, "ADP")==0) return base+2;
+    if (fieldName[0]=='A' && strcmp(fieldName, "ADO")==0) return base+3;
+    if (fieldName[0]=='L' && strcmp(fieldName, "LEN")==0) return base+4;
+    if (fieldName[0]=='r' && strcmp(fieldName, "reserved")==0) return base+5;
+    if (fieldName[0]=='C' && strcmp(fieldName, "C")==0) return base+6;
+    if (fieldName[0]=='N' && strcmp(fieldName, "NEXT")==0) return base+7;
+    if (fieldName[0]=='I' && strcmp(fieldName, "IRQ")==0) return base+8;
+    if (fieldName[0]=='D' && strcmp(fieldName, "DATA")==0) return base+9;
+    if (fieldName[0]=='W' && strcmp(fieldName, "WKC")==0) return base+10;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -140,9 +200,19 @@ const char *type12PDUDescriptor::getFieldTypeString(void *object, int field) con
         field -= basedesc->getFieldCount(object);
     }
     static const char *fieldTypeStrings[] = {
+        "unsigned char",
+        "unsigned char",
+        "short",
+        "short",
         "int",
+        "char",
+        "bool",
+        "bool",
+        "short",
+        "char",
+        "short",
     };
-    return (field>=0 && field<1) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<11) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *type12PDUDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -182,7 +252,17 @@ std::string type12PDUDescriptor::getFieldAsString(void *object, int field, int i
     }
     type12PDU *pp = (type12PDU *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->prova);
+        case 0: return ulong2string(pp->CMD);
+        case 1: return ulong2string(pp->IDX);
+        case 2: return long2string(pp->ADP);
+        case 3: return long2string(pp->ADO);
+        case 4: return long2string(pp->LEN);
+        case 5: return long2string(pp->reserved);
+        case 6: return bool2string(pp->C);
+        case 7: return bool2string(pp->NEXT);
+        case 8: return long2string(pp->IRQ);
+        case 9: return long2string(pp->DATA);
+        case 10: return long2string(pp->WKC);
         default: return "";
     }
 }
@@ -197,7 +277,17 @@ bool type12PDUDescriptor::setFieldAsString(void *object, int field, int i, const
     }
     type12PDU *pp = (type12PDU *)object; (void)pp;
     switch (field) {
-        case 0: pp->prova = string2long(value); return true;
+        case 0: pp->CMD = string2ulong(value); return true;
+        case 1: pp->IDX = string2ulong(value); return true;
+        case 2: pp->ADP = string2long(value); return true;
+        case 3: pp->ADO = string2long(value); return true;
+        case 4: pp->LEN = string2long(value); return true;
+        case 5: pp->reserved = string2long(value); return true;
+        case 6: pp->C = string2bool(value); return true;
+        case 7: pp->NEXT = string2bool(value); return true;
+        case 8: pp->IRQ = string2long(value); return true;
+        case 9: pp->DATA = string2long(value); return true;
+        case 10: pp->WKC = string2long(value); return true;
         default: return false;
     }
 }
@@ -212,8 +302,18 @@ const char *type12PDUDescriptor::getFieldStructName(void *object, int field) con
     }
     static const char *fieldStructNames[] = {
         NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
     };
-    return (field>=0 && field<1) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<11) ? fieldStructNames[field] : NULL;
 }
 
 void *type12PDUDescriptor::getFieldStructPointer(void *object, int field, int i) const

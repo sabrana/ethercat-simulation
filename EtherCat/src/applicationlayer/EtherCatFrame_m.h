@@ -21,7 +21,17 @@
 struct type12PDU
 {
     type12PDU();
-    int prova;
+    unsigned char CMD;
+    unsigned char IDX;
+    short ADP;
+    short ADO;
+    int LEN;
+    char reserved;
+    bool C;
+    bool NEXT;
+    short IRQ;
+    char DATA;
+    short WKC;
 };
 
 void doPacking(cCommBuffer *b, type12PDU& a);
@@ -34,10 +44,6 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
  *     int lenght;
  *     char reserved;
  *     char type;
- *     
- *     
- *     
- *     
  *     type12PDU pdu[10];
  *     int data;
  *    

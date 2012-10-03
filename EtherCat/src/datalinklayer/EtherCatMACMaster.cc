@@ -109,9 +109,12 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //PayLoad ethernet frame
             cPacket* payload=(cPacket*)msg;
+            EtherCatFrame* frame=(EtherCatFrame*)msg;
+            this->valueData=frame->getData();
             int dim_payload=payload->getByteLength();
             for(byte; byte<=dim_payload+22; byte++){
                 ev << "Adding " << byte-22 <<" /1498 packet of PayLoad ethernet frame";
+
                 cPacket *c=new cPacket("PayLoad");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -119,7 +122,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //FCS ethernet frame
             for(byte; byte<=dim_payload+26; byte++){
-                ev << "Adding " << byte-(1498+22) <<" /4 packet of FCS ethernet frame";
+                ev << "Adding " << byte-(1500+22) <<" /4 packet of FCS ethernet frame";
                 cPacket *c=new cPacket("FCS");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -165,8 +168,8 @@ void EtherCatMACMaster::finish(){
         ev << "EtherType:"<< type5   << "\n";
         ev << "PayLoad:" <<  type6   << "\n";
         ev << "FCS:" <<      type7   << "\n";
-        ev << "byteReturn:" << byteReturn;
-
+        ev << "byteReturn:" << byteReturn << "\n";
+        ev << "valueData:" <<  this->valueData << "\n";
     }
 
 
