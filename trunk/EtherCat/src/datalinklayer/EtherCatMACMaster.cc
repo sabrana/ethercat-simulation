@@ -21,7 +21,14 @@ Define_Module(EtherCatMACMaster);
 
 EtherCatMACMaster::EtherCatMACMaster()
 {
-
+    byteReturn=0;
+    type1=0;
+    type2=0;
+    type3=0;
+    type4=0;
+    type5=0;
+    type6=0;
+    type7=0;
 }
 
 EtherCatMACMaster::~EtherCatMACMaster()
@@ -32,12 +39,7 @@ EtherCatMACMaster::~EtherCatMACMaster()
 
 void EtherCatMACMaster::initialize()
 {
-
-
         delay=par("delay");
-
-
-
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -80,6 +82,8 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             //Destination MAC Address ethernet frame
             for(byte; byte<=14; byte++){
                 //preamble ethernet frame
+
+
                 ev << "Adding " << byte-8 <<" /6 packet of DA ethernet frame";
                 cPacket *c=new cPacket("DA");
                 c->setByteLength(1);
@@ -123,9 +127,45 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
    }else if(msg->getArrivalGate()==gate("phys$i")){
-        //da implementare
+
+       if(strcmp(msg->getName(),"Preamble")==0){
+                  type1++;
+       }
+       if(strcmp(msg->getName(),"SFD")==0){
+                  type2++;
+       }
+       if(strcmp(msg->getName(),"DA")==0){
+                  type3++;
+       }
+       if(strcmp(msg->getName(),"SA")==0){
+                  type4++;
+       }
+       if(strcmp(msg->getName(),"EtherType")==0){
+                  type5++;
+       }
+       if(strcmp(msg->getName(),"PayLoad")==0){
+                  type6++;
+       }
+       if(strcmp(msg->getName(),"FCS")==0){
+                  type7++;
+       }
+       byteReturn++;
+
    }
+
+
 }
+void EtherCatMACMaster::finish(){
+        ev << "Preamble:" << type1   << "\n";
+        ev << "SFD:" <<      type2   << "\n";
+        ev << "DA:" <<       type3   << "\n";
+        ev << "SA:" <<       type4   << "\n";
+        ev << "EtherType:"<< type5   << "\n";
+        ev << "PayLoad:" <<  type6   << "\n";
+        ev << "FCS:" <<      type7   << "\n";
+        ev << "byteReturn:" << byteReturn;
+
+    }
 
 
 
