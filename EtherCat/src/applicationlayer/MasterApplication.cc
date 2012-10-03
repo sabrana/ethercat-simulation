@@ -23,9 +23,26 @@ void MasterApplication::initialize()
 
 
     EtherCatFrame *payload = new EtherCatFrame("payload");
-    payload->setByteLength(1500);//Ethercat Datagram
-    payload->setData(10);
-    EV << "I'm MasterApplication and send payload"<< payload << "\n";
+
+    //simuliamo di fare tanti PDU quanti sono gli slave a disposizione
+    int dimPayload=2;
+
+    int dimMaxSet=1498;
+
+    int npdu=par("pdu_number");
+
+    int dim_pdu=1498-npdu+1;
+    //int dim_pdu=(1500-par("pdu_number")*2)/par("pdu_number");
+
+    for(int i=1;i<=npdu;i++){
+        payload->getPdu(i).ADP=-i;
+        dimPayload+=uniform(13,dim_pdu);
+        dim_pdu-=dimPayload;
+    }
+    payload->setLenght(dimPayload);
+    payload->setByteLength(dimPayload);//Ethercat Datagram
+
+    EV << "I'm MasterApplication and send payload"<< payload << "of "<< payload->getByteLength() <<" length\n";
     send(payload,"out");
     //scheduleAt(5.0, payload->dup());
 

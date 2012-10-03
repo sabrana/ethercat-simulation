@@ -44,7 +44,7 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
  *     int lenght;
  *     char reserved;
  *     char type;
- *     type12PDU pdu[10];
+ *     type12PDU pdu[115];
  *     int data;
  *    
  * }
@@ -56,7 +56,7 @@ class EtherCatFrame : public ::cPacket
     int lenght_var;
     char reserved_var;
     char type_var;
-    type12PDU pdu_var[10];
+    type12PDU pdu_var[115];
     int data_var;
 
   private:
