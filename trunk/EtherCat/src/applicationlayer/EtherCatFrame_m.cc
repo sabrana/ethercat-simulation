@@ -362,7 +362,7 @@ void EtherCatFrame::copy(const EtherCatFrame& other)
     this->lenght_var = other.lenght_var;
     this->reserved_var = other.reserved_var;
     this->type_var = other.type_var;
-    for (unsigned int i=0; i<10; i++)
+    for (unsigned int i=0; i<115; i++)
         this->pdu_var[i] = other.pdu_var[i];
     this->data_var = other.data_var;
 }
@@ -373,7 +373,7 @@ void EtherCatFrame::parsimPack(cCommBuffer *b)
     doPacking(b,this->lenght_var);
     doPacking(b,this->reserved_var);
     doPacking(b,this->type_var);
-    doPacking(b,this->pdu_var,10);
+    doPacking(b,this->pdu_var,115);
     doPacking(b,this->data_var);
 }
 
@@ -383,7 +383,7 @@ void EtherCatFrame::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->lenght_var);
     doUnpacking(b,this->reserved_var);
     doUnpacking(b,this->type_var);
-    doUnpacking(b,this->pdu_var,10);
+    doUnpacking(b,this->pdu_var,115);
     doUnpacking(b,this->data_var);
 }
 
@@ -419,18 +419,18 @@ void EtherCatFrame::setType(char type)
 
 unsigned int EtherCatFrame::getPduArraySize() const
 {
-    return 10;
+    return 115;
 }
 
 type12PDU& EtherCatFrame::getPdu(unsigned int k)
 {
-    if (k>=10) throw cRuntimeError("Array of size 10 indexed by %lu", (unsigned long)k);
+    if (k>=115) throw cRuntimeError("Array of size 115 indexed by %lu", (unsigned long)k);
     return pdu_var[k];
 }
 
 void EtherCatFrame::setPdu(unsigned int k, const type12PDU& pdu)
 {
-    if (k>=10) throw cRuntimeError("Array of size 10 indexed by %lu", (unsigned long)k);
+    if (k>=115) throw cRuntimeError("Array of size 115 indexed by %lu", (unsigned long)k);
     this->pdu_var[k] = pdu;
 }
 
@@ -583,7 +583,7 @@ int EtherCatFrameDescriptor::getArraySize(void *object, int field) const
     }
     EtherCatFrame *pp = (EtherCatFrame *)object; (void)pp;
     switch (field) {
-        case 3: return 10;
+        case 3: return 115;
         default: return 0;
     }
 }
