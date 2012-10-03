@@ -35,7 +35,7 @@ packet EtherCatFrame {
     int lenght;
     char reserved;
     char type;
-    type12PDU pdu[10];
+    type12PDU pdu[115];
     int data;
    
 }
