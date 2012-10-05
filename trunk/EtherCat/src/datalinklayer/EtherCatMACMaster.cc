@@ -114,7 +114,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             //HDR: 2 byte
             for(byte; byte<=22+2; byte++){
                 ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
-                    cPacket *c=new cPacket("Frame HDR "<<byte-22);
+                    cPacket *c=new cPacket("Frame HDR");
                     c->setByteLength(1);
                     //settiamo il valore del frame HDR nell'ultimo byte inviato
                     if(byte==22+2){
@@ -125,19 +125,25 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                 scheduleAt(simTime()+delay*byte, c->dup());
             }
 
-            //HDR: 2 byte
-            for(byte; byte<=24+length_payload; byte++){
-                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
-                    cPacket *c=new cPacket("Frame HDR "<<byte-22);
-                    c->setByteLength(1);
-                    //settiamo il valore del frame HDR nell'ultimo byte inviato
-                    if(byte==22+2){
-                        cMsgPar *length=new cMsgPar("length");
-                        length->setLongValue(length_payload);
-                        c->addPar(length);
-                    }
-                scheduleAt(simTime()+delay*byte, c->dup());
+            // n PDU12
+            int start=24;
+            for(int i=0;i<frame->getPduArrayRealSize();i++){
+                type12PDU pdu=frame->getPdu(i);
+                    for(byte; byte<=start+pdu.LEN; byte++){
+                    ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
+                        cPacket *c=new cPacket("PDU "+i);
+                        c->setByteLength(1);
+                        //settiamo il valore del frame HDR nell'ultimo byte inviato
+                        if(byte==22+2){
+                            cMsgPar *length=new cMsgPar("length");
+                            length->setLongValue(length_payload);
+                            c->addPar(length);
+                        }
+                    scheduleAt(simTime()+delay*byte, c->dup());
+                }
+                start=start+=pdu.LEN;
             }
+
 
 
             //FCS ethernet frame
