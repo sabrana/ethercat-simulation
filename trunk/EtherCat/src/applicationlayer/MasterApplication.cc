@@ -31,13 +31,14 @@ void MasterApplication::initialize()
 
     int npdu=par("pdu_number");
 
-    int dim_pdu=1498-npdu+1;
-    //int dim_pdu=(1500-par("pdu_number")*2)/par("pdu_number");
+    //int dim_pdu=1498-npdu+1;
+    int dim_pdu=1498/npdu;
 
     for(int i=1;i<=npdu;i++){
         payload->getPdu(i).ADP=-i;
         dimPayload+=uniform(13,dim_pdu);
-        dim_pdu-=dimPayload;
+        ev<< "dim payload "<<i<<" "<<dimPayload<<"\n";
+        //dim_pdu-=dimPayload;
     }
     payload->setLenght(dimPayload);
     payload->setByteLength(dimPayload);//Ethercat Datagram
