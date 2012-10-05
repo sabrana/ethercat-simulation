@@ -127,7 +127,15 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             // n PDU12
             int start=24;
-            for(int i=0;i<frame->getPduArrayRealSize();i++){
+            int dim=0;
+                for(int i=0;i<frame->getPduArraySize();i++){
+
+                    if(frame->getPdu(i).LEN!=0)
+                        dim++;
+
+                }
+
+            for(int i=0;i<dim;i++){
                 type12PDU pdu=frame->getPdu(i);
                     for(byte; byte<=start+pdu.LEN; byte++){
                     ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";

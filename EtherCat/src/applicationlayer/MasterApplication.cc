@@ -34,6 +34,7 @@ void MasterApplication::initialize()
     //int dim_pdu=1498-npdu+1;
     int dim_max_pdu=1498/npdu;
 
+
     for(int i=1;i<=npdu;i++){
         payload->getPdu(i).ADP=-i;
         int dimPDU=uniform(13,dim_max_pdu);
