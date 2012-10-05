@@ -109,18 +109,40 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //PayLoad ethernet frame
             EtherCatFrame* frame=(EtherCatFrame*)msg;
-            int dim_payload=frame->getByteLength();
-            for(byte; byte<=dim_payload+22; byte++){
-                ev << "Adding " << byte-22 <<" /"<<dim_payload<<" packet of PayLoad ethernet frame";
+            int length_payload=frame->getLength();
 
-                cPacket *c=new cPacket("PayLoad");
-                c->setByteLength(1);
+            //HDR: 2 byte
+            for(byte; byte<=22+2; byte++){
+                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
+                    cPacket *c=new cPacket("Frame HDR "<<byte-22);
+                    c->setByteLength(1);
+                    //settiamo il valore del frame HDR nell'ultimo byte inviato
+                    if(byte==22+2){
+                        cMsgPar *length=new cMsgPar("length");
+                        length->setLongValue(length_payload);
+                        c->addPar(length);
+                    }
                 scheduleAt(simTime()+delay*byte, c->dup());
             }
 
+            //HDR: 2 byte
+            for(byte; byte<=24+length_payload; byte++){
+                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
+                    cPacket *c=new cPacket("Frame HDR "<<byte-22);
+                    c->setByteLength(1);
+                    //settiamo il valore del frame HDR nell'ultimo byte inviato
+                    if(byte==22+2){
+                        cMsgPar *length=new cMsgPar("length");
+                        length->setLongValue(length_payload);
+                        c->addPar(length);
+                    }
+                scheduleAt(simTime()+delay*byte, c->dup());
+            }
+
+
             //FCS ethernet frame
-            for(byte; byte<=dim_payload+26; byte++){
-                ev << "Adding " << byte-(dim_payload+22) <<" /4 packet of FCS ethernet frame";
+            for(byte; byte<=length_payload+26; byte++){
+                ev << "Adding " << byte-(length_payload+22) <<" /4 packet of FCS ethernet frame";
                 cPacket *c=new cPacket("FCS");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());

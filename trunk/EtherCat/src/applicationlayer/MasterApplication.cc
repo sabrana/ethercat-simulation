@@ -32,15 +32,15 @@ void MasterApplication::initialize()
     int npdu=par("pdu_number");
 
     //int dim_pdu=1498-npdu+1;
-    int dim_pdu=1498/npdu;
+    int dim_max_pdu=1498/npdu;
 
     for(int i=1;i<=npdu;i++){
         payload->getPdu(i).ADP=-i;
-        dimPayload+=uniform(13,dim_pdu);
+        dimPayload+=uniform(13,dim_max_pdu);
         ev<< "dim payload "<<i<<" "<<dimPayload<<"\n";
         //dim_pdu-=dimPayload;
     }
-    payload->setLenght(dimPayload);
+    payload->setLength(dimPayload);
     payload->setByteLength(dimPayload);//Ethercat Datagram
 
     EV << "I'm MasterApplication and send payload"<< payload << "of "<< payload->getByteLength() <<" length\n";
