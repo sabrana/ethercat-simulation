@@ -45,7 +45,6 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
  *     char reserved;
  *     char type;
  *     type12PDU pdu[115];
- *     int data;
  *    
  * }
  * </pre>
@@ -57,7 +56,6 @@ class EtherCatFrame : public ::cPacket
     char reserved_var;
     char type_var;
     type12PDU pdu_var[115];
-    int data_var;
 
   private:
     void copy(const EtherCatFrame& other);
@@ -86,8 +84,6 @@ class EtherCatFrame : public ::cPacket
     virtual type12PDU& getPdu(unsigned int k);
     virtual const type12PDU& getPdu(unsigned int k) const {return const_cast<EtherCatFrame*>(this)->getPdu(k);}
     virtual void setPdu(unsigned int k, const type12PDU& pdu);
-    virtual int getData() const;
-    virtual void setData(int data);
 };
 
 inline void doPacking(cCommBuffer *b, EtherCatFrame& obj) {obj.parsimPack(b);}

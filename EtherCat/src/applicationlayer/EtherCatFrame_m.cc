@@ -337,7 +337,6 @@ EtherCatFrame::EtherCatFrame(const char *name, int kind) : cPacket(name,kind)
     this->lenght_var = 0;
     this->reserved_var = 0;
     this->type_var = 0;
-    this->data_var = 0;
 }
 
 EtherCatFrame::EtherCatFrame(const EtherCatFrame& other) : cPacket(other)
@@ -364,7 +363,6 @@ void EtherCatFrame::copy(const EtherCatFrame& other)
     this->type_var = other.type_var;
     for (unsigned int i=0; i<115; i++)
         this->pdu_var[i] = other.pdu_var[i];
-    this->data_var = other.data_var;
 }
 
 void EtherCatFrame::parsimPack(cCommBuffer *b)
@@ -374,7 +372,6 @@ void EtherCatFrame::parsimPack(cCommBuffer *b)
     doPacking(b,this->reserved_var);
     doPacking(b,this->type_var);
     doPacking(b,this->pdu_var,115);
-    doPacking(b,this->data_var);
 }
 
 void EtherCatFrame::parsimUnpack(cCommBuffer *b)
@@ -384,7 +381,6 @@ void EtherCatFrame::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->reserved_var);
     doUnpacking(b,this->type_var);
     doUnpacking(b,this->pdu_var,115);
-    doUnpacking(b,this->data_var);
 }
 
 int EtherCatFrame::getLenght() const
@@ -434,16 +430,6 @@ void EtherCatFrame::setPdu(unsigned int k, const type12PDU& pdu)
     this->pdu_var[k] = pdu;
 }
 
-int EtherCatFrame::getData() const
-{
-    return data_var;
-}
-
-void EtherCatFrame::setData(int data)
-{
-    this->data_var = data;
-}
-
 class EtherCatFrameDescriptor : public cClassDescriptor
 {
   public:
@@ -491,7 +477,7 @@ const char *EtherCatFrameDescriptor::getProperty(const char *propertyname) const
 int EtherCatFrameDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
+    return basedesc ? 4+basedesc->getFieldCount(object) : 4;
 }
 
 unsigned int EtherCatFrameDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -507,9 +493,8 @@ unsigned int EtherCatFrameDescriptor::getFieldTypeFlags(void *object, int field)
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISARRAY | FD_ISCOMPOUND,
-        FD_ISEDITABLE,
     };
-    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
 const char *EtherCatFrameDescriptor::getFieldName(void *object, int field) const
@@ -525,9 +510,8 @@ const char *EtherCatFrameDescriptor::getFieldName(void *object, int field) const
         "reserved",
         "type",
         "pdu",
-        "data",
     };
-    return (field>=0 && field<5) ? fieldNames[field] : NULL;
+    return (field>=0 && field<4) ? fieldNames[field] : NULL;
 }
 
 int EtherCatFrameDescriptor::findField(void *object, const char *fieldName) const
@@ -538,7 +522,6 @@ int EtherCatFrameDescriptor::findField(void *object, const char *fieldName) cons
     if (fieldName[0]=='r' && strcmp(fieldName, "reserved")==0) return base+1;
     if (fieldName[0]=='t' && strcmp(fieldName, "type")==0) return base+2;
     if (fieldName[0]=='p' && strcmp(fieldName, "pdu")==0) return base+3;
-    if (fieldName[0]=='d' && strcmp(fieldName, "data")==0) return base+4;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -555,9 +538,8 @@ const char *EtherCatFrameDescriptor::getFieldTypeString(void *object, int field)
         "char",
         "char",
         "type12PDU",
-        "int",
     };
-    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<4) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *EtherCatFrameDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -602,7 +584,6 @@ std::string EtherCatFrameDescriptor::getFieldAsString(void *object, int field, i
         case 1: return long2string(pp->getReserved());
         case 2: return long2string(pp->getType());
         case 3: {std::stringstream out; out << pp->getPdu(i); return out.str();}
-        case 4: return long2string(pp->getData());
         default: return "";
     }
 }
@@ -620,7 +601,6 @@ bool EtherCatFrameDescriptor::setFieldAsString(void *object, int field, int i, c
         case 0: pp->setLenght(string2long(value)); return true;
         case 1: pp->setReserved(string2long(value)); return true;
         case 2: pp->setType(string2long(value)); return true;
-        case 4: pp->setData(string2long(value)); return true;
         default: return false;
     }
 }
@@ -638,9 +618,8 @@ const char *EtherCatFrameDescriptor::getFieldStructName(void *object, int field)
         NULL,
         NULL,
         "type12PDU",
-        NULL,
     };
-    return (field>=0 && field<5) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<4) ? fieldStructNames[field] : NULL;
 }
 
 void *EtherCatFrameDescriptor::getFieldStructPointer(void *object, int field, int i) const
