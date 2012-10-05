@@ -32,7 +32,7 @@ struct type12PDU
 }
 
 packet EtherCatFrame {
-    int lenght;
+    int length;
     char reserved;
     char type;
     type12PDU pdu[115];

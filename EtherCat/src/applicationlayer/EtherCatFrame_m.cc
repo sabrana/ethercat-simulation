@@ -334,7 +334,7 @@ Register_Class(EtherCatFrame);
 
 EtherCatFrame::EtherCatFrame(const char *name, int kind) : cPacket(name,kind)
 {
-    this->lenght_var = 0;
+    this->length_var = 0;
     this->reserved_var = 0;
     this->type_var = 0;
 }
@@ -358,7 +358,7 @@ EtherCatFrame& EtherCatFrame::operator=(const EtherCatFrame& other)
 
 void EtherCatFrame::copy(const EtherCatFrame& other)
 {
-    this->lenght_var = other.lenght_var;
+    this->length_var = other.length_var;
     this->reserved_var = other.reserved_var;
     this->type_var = other.type_var;
     for (unsigned int i=0; i<115; i++)
@@ -368,7 +368,7 @@ void EtherCatFrame::copy(const EtherCatFrame& other)
 void EtherCatFrame::parsimPack(cCommBuffer *b)
 {
     cPacket::parsimPack(b);
-    doPacking(b,this->lenght_var);
+    doPacking(b,this->length_var);
     doPacking(b,this->reserved_var);
     doPacking(b,this->type_var);
     doPacking(b,this->pdu_var,115);
@@ -377,20 +377,20 @@ void EtherCatFrame::parsimPack(cCommBuffer *b)
 void EtherCatFrame::parsimUnpack(cCommBuffer *b)
 {
     cPacket::parsimUnpack(b);
-    doUnpacking(b,this->lenght_var);
+    doUnpacking(b,this->length_var);
     doUnpacking(b,this->reserved_var);
     doUnpacking(b,this->type_var);
     doUnpacking(b,this->pdu_var,115);
 }
 
-int EtherCatFrame::getLenght() const
+int EtherCatFrame::getLength() const
 {
-    return lenght_var;
+    return length_var;
 }
 
-void EtherCatFrame::setLenght(int lenght)
+void EtherCatFrame::setLength(int length)
 {
-    this->lenght_var = lenght;
+    this->length_var = length;
 }
 
 char EtherCatFrame::getReserved() const
@@ -506,7 +506,7 @@ const char *EtherCatFrameDescriptor::getFieldName(void *object, int field) const
         field -= basedesc->getFieldCount(object);
     }
     static const char *fieldNames[] = {
-        "lenght",
+        "length",
         "reserved",
         "type",
         "pdu",
@@ -518,7 +518,7 @@ int EtherCatFrameDescriptor::findField(void *object, const char *fieldName) cons
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
-    if (fieldName[0]=='l' && strcmp(fieldName, "lenght")==0) return base+0;
+    if (fieldName[0]=='l' && strcmp(fieldName, "length")==0) return base+0;
     if (fieldName[0]=='r' && strcmp(fieldName, "reserved")==0) return base+1;
     if (fieldName[0]=='t' && strcmp(fieldName, "type")==0) return base+2;
     if (fieldName[0]=='p' && strcmp(fieldName, "pdu")==0) return base+3;
@@ -580,7 +580,7 @@ std::string EtherCatFrameDescriptor::getFieldAsString(void *object, int field, i
     }
     EtherCatFrame *pp = (EtherCatFrame *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getLenght());
+        case 0: return long2string(pp->getLength());
         case 1: return long2string(pp->getReserved());
         case 2: return long2string(pp->getType());
         case 3: {std::stringstream out; out << pp->getPdu(i); return out.str();}
@@ -598,7 +598,7 @@ bool EtherCatFrameDescriptor::setFieldAsString(void *object, int field, int i, c
     }
     EtherCatFrame *pp = (EtherCatFrame *)object; (void)pp;
     switch (field) {
-        case 0: pp->setLenght(string2long(value)); return true;
+        case 0: pp->setLength(string2long(value)); return true;
         case 1: pp->setReserved(string2long(value)); return true;
         case 2: pp->setType(string2long(value)); return true;
         default: return false;

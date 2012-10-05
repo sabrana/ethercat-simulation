@@ -41,7 +41,7 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
  * Class generated from <tt>applicationlayer/EtherCatFrame.msg</tt> by opp_msgc.
  * <pre>
  * packet EtherCatFrame {
- *     int lenght;
+ *     int length;
  *     char reserved;
  *     char type;
  *     type12PDU pdu[115];
@@ -52,7 +52,7 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
 class EtherCatFrame : public ::cPacket
 {
   protected:
-    int lenght_var;
+    int length_var;
     char reserved_var;
     char type_var;
     type12PDU pdu_var[115];
@@ -74,8 +74,8 @@ class EtherCatFrame : public ::cPacket
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getLenght() const;
-    virtual void setLenght(int lenght);
+    virtual int getLength() const;
+    virtual void setLength(int length);
     virtual char getReserved() const;
     virtual void setReserved(char reserved);
     virtual char getType() const;
