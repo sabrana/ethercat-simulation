@@ -65,7 +65,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             //preamble ethernet frame
             for(byte; byte<=7; byte++){
                 //preamble ethernet frame
-                ev << "Adding " << byte <<" /7 packet of preamble ethernet frame";
+                ev << "Adding " << byte <<" /7 packet of preamble ethernet frame"<< endl;
                 cPacket *c=new cPacket("Preamble");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -73,7 +73,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //SFD ethernet frame
             for(byte; byte<=8; byte++){
-                ev << "Adding " << byte-7 <<"/1 packet of SFD ethernet frame";
+                ev << "Adding " << byte-7 <<"/1 packet of SFD ethernet frame"<< endl;
                 cPacket *c=new cPacket("SFD");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -84,7 +84,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                 //preamble ethernet frame
 
 
-                ev << "Adding " << byte-8 <<" /6 packet of DA ethernet frame";
+                ev << "Adding " << byte-8 <<" /6 packet of DA ethernet frame"<< endl;
                 cPacket *c=new cPacket("DA");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -93,7 +93,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             //Source MAC Address ethernet frame
             for(byte; byte<=20; byte++){
                 //preamble ethernet frame
-                ev << "Adding " << byte-14 <<" /6 packet of SA ethernet frame";
+                ev << "Adding " << byte-14 <<" /6 packet of SA ethernet frame"<< endl;
                 cPacket *c=new cPacket("SA");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -101,7 +101,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //EtherType ethernet frame
             for(byte; byte<=22; byte++){
-                ev << "Adding " << byte-16 <<" /2 packet of EtherType ethernet frame";
+                ev << "Adding " << byte-16 <<" /2 packet of EtherType ethernet frame"<< endl;
                 cPacket *c=new cPacket("EtherType");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
@@ -113,7 +113,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //HDR: 2 byte
             for(byte; byte<=22+2; byte++){
-                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
+                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame"<< endl;
                     cPacket *c=new cPacket("Frame HDR");
                     c->setByteLength(1);
                     //settiamo il valore del frame HDR nell'ultimo byte inviato
@@ -138,7 +138,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             for(int i=0;i<dim;i++){
                 type12PDU pdu=frame->getPdu(i);
                     for(byte; byte<=start+pdu.LEN; byte++){
-                    ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame";
+                    ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame"<< endl;
                         cPacket *c=new cPacket("PDU "+i);
                         c->setByteLength(1);
                         //settiamo il valore del frame HDR nell'ultimo byte inviato
@@ -156,7 +156,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //FCS ethernet frame
             for(byte; byte<=length_payload+26; byte++){
-                ev << "Adding " << byte-(length_payload+22) <<" /4 packet of FCS ethernet frame";
+                ev << "Adding " << byte-(length_payload+22) <<" /4 packet of FCS ethernet frame"<< endl;
                 cPacket *c=new cPacket("FCS");
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
