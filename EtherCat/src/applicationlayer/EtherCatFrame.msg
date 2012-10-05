@@ -22,7 +22,7 @@ struct type12PDU
     unsigned char IDX; // Index
     short ADP; // auto increment address
     short ADO; // Physical memory or register address
-    int LEN; // unsigned 11bit
+    int LEN=0; // unsigned 11bit
     char reserved; // unsigned 3bit
     bool C;// unsigned 1bit
     bool NEXT; // unsigned 1bit

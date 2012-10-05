@@ -81,6 +81,7 @@ class EtherCatFrame : public ::cPacket
     virtual char getType() const;
     virtual void setType(char type);
     virtual unsigned int getPduArraySize() const;
+    virtual unsigned int getPduArrayRealSize();
     virtual type12PDU& getPdu(unsigned int k);
     virtual const type12PDU& getPdu(unsigned int k) const {return const_cast<EtherCatFrame*>(this)->getPdu(k);}
     virtual void setPdu(unsigned int k, const type12PDU& pdu);

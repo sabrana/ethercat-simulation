@@ -36,8 +36,10 @@ void MasterApplication::initialize()
 
     for(int i=1;i<=npdu;i++){
         payload->getPdu(i).ADP=-i;
-        dimPayload+=uniform(13,dim_max_pdu);
-        ev<< "dim payload "<<i<<" "<<dimPayload<<"\n";
+        int dimPDU=uniform(13,dim_max_pdu);
+        payload->getPdu(i).LEN=dimPDU;
+        dimPayload+=dimPDU;
+        ev<< "dim PDU: "<<dimPDU<<"; dim payload"<<payload<<"" <<i<<" "<<dimPayload<<"\n";
         //dim_pdu-=dimPayload;
     }
     payload->setLength(dimPayload);

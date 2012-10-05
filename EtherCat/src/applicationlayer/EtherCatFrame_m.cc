@@ -418,6 +418,18 @@ unsigned int EtherCatFrame::getPduArraySize() const
     return 115;
 }
 
+unsigned int EtherCatFrame::getPduArrayRealSize()
+{
+    int dim=0;
+    for(int i=0;i<this->getPduArraySize();i++){
+
+        if(this->getPdu(i).LEN!=0)
+            dim++;
+
+    }
+
+}
+
 type12PDU& EtherCatFrame::getPdu(unsigned int k)
 {
     if (k>=115) throw cRuntimeError("Array of size 115 indexed by %lu", (unsigned long)k);
