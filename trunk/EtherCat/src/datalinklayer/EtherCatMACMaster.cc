@@ -113,7 +113,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //HDR: 2 byte
             for(byte; byte<=22+2; byte++){
-                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame"<< endl;
+                ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame: HDR"<< endl;
                     cPacket *c=new cPacket("Frame HDR");
                     c->setByteLength(1);
                     //settiamo il valore del frame HDR nell'ultimo byte inviato
@@ -135,11 +135,11 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
                 }
 
-            for(int i=0;i<dim;i++){
+            for(int i=0;i<=dim;i++){
                 type12PDU pdu=frame->getPdu(i);
                     for(byte; byte<=start+pdu.LEN; byte++){
-                    ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame"<< endl;
-                        cPacket *c=new cPacket("PDU "+i);
+                    ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame: PDU "<<i<< endl;
+                        cPacket *c=new cPacket("PDU");
                         c->setByteLength(1);
                         //settiamo il valore del frame HDR nell'ultimo byte inviato
                         if(byte==22+2){
@@ -182,7 +182,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
        if(strcmp(msg->getName(),"EtherType")==0){
                   type5++;
        }
-       if(strcmp(msg->getName(),"PayLoad")==0){
+       if(strcmp(msg->getName(),"PDU")==0){
                   type6++;
        }
        if(strcmp(msg->getName(),"FCS")==0){
