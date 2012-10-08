@@ -23,6 +23,7 @@ EtherCatMACSlave::EtherCatMACSlave()
     // even if initialize() doesn't get called because of a runtime
     // error or user cancellation during the startup process.
     event = tempMsg = NULL;
+    counter=0;
 }
 
 EtherCatMACSlave::~EtherCatMACSlave()
@@ -58,20 +59,51 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 send(tempMsg->dup(),"phys1$o");
             }
         }
+
     else if(msg->getArrivalGate()==gate("phys1$i")){
         EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
 
+        counter++;
 
-        //EthernetFrame *ethf = (EthernetFrame*)msg;
-        //cPacket *payload = ethf->decapsulate();
+        if(strcmp(msg->getName(),"PDU_END")==0){
+            cMsgPar *adp=&msg->par("ADP");
+            long address=(long)adp->getObjectValue();
+            address++;
+            adp->setLongValue(address);
 
-        cPacket *byte = (cPacket*)msg;
+            if(address==0){
 
-        ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl; // --> 26+1498 = 1524
-        send(byte,"upperLayerOut");
-        EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
+            cPacket *byte = (cPacket*)msg;
+            ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
+            send(byte,"upperLayerOut");
+            EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
+            }
+        else{
+                tempMsg = msg->dup();
+                scheduleAt(simTime()+delay, event->dup());
+                //scheduleAt(simTime()+uniform(0,1), event->dup());
+
+            }
+        }
+
+        else{
+            tempMsg = msg->dup();
+            scheduleAt(simTime()+delay, event->dup());
+            //scheduleAt(simTime()+uniform(0,1), event->dup());
+
+        }
+
+
+
+
+
+
+
+
+
 
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
+
         tempMsg = msg->dup();
         scheduleAt(simTime()+delay, event->dup());
         //scheduleAt(simTime()+uniform(0,1), event->dup());
