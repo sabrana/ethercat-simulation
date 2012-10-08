@@ -127,6 +127,8 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             // n PDU12
             int start=24;
+
+            //ottengo il numero di pdu
             int dim=0;
                 for(int i=0;i<frame->getPduArraySize();i++){
 
@@ -142,10 +144,14 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                         cPacket *c=new cPacket("PDU");
                         c->setByteLength(1);
                         //settiamo il valore del frame HDR nell'ultimo byte inviato
-                        if(byte==22+2){
-                            cMsgPar *length=new cMsgPar("length");
+                        if(byte==start+pdu.LEN){
+                            c->setName("END_PDU");
+                            cMsgPar *length=new cMsgPar("LEN");
                             length->setLongValue(length_payload);
+                            cMsgPar *adp=new cMsgPar("ADP");
+                            adp->setLongValue(pdu.ADP);
                             c->addPar(length);
+                            c->addPar(adp);
                         }
                     scheduleAt(simTime()+delay*byte, c->dup());
                 }

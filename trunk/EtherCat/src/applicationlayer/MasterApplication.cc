@@ -39,6 +39,7 @@ void MasterApplication::initialize()
         payload->getPdu(i).ADP=-i;
         int dimPDU=uniform(13,dim_max_pdu);
         payload->getPdu(i).LEN=dimPDU;
+        payload->getPdu(i).ADP=-i;
         dimPayload+=dimPDU;
         ev<< "dim PDU: "<<dimPDU<<"; dim payload"<<payload<<"" <<i<<" "<<dimPayload<<"\n";
         //dim_pdu-=dimPayload;
@@ -49,6 +50,7 @@ void MasterApplication::initialize()
     EV << "I'm MasterApplication and send payload"<< payload << "of "<< payload->getByteLength() <<" length\n";
     send(payload,"out");
     //scheduleAt(5.0, payload->dup());
+
 
 }
 
