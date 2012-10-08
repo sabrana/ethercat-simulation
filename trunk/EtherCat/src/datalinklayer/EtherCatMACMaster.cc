@@ -39,7 +39,12 @@ EtherCatMACMaster::~EtherCatMACMaster()
 
 void EtherCatMACMaster::initialize()
 {
+        //delay fisso pari al parametro di configurazione
         delay=par("delay");
+
+        //delay variabile con max pari al parametro di configurazione
+        //int delayMax=par("delay");
+        //delay=uniform(0,delayMax);
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)

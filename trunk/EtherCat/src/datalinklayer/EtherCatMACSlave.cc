@@ -71,17 +71,17 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
             adp->setLongValue(address);
 
             if(address==0){
-            cPacket *byte = (cPacket*)msg;
-            ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
-            send(byte,"upperLayerOut");
-            EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
-            }
-        else{
-                tempMsg = msg->dup();
-                scheduleAt(simTime()+delay, event->dup());
-                //scheduleAt(simTime()+uniform(0,1), event->dup());
+                    cPacket *byte = (cPacket*)msg;
+                    ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
+                    send(byte,"upperLayerOut");
+                    EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
+                }
+            else{
+                    tempMsg = msg->dup();
+                    scheduleAt(simTime()+delay, event->dup());
+                    //scheduleAt(simTime()+uniform(0,1), event->dup());
 
-            }
+                }
         }
 
         else{
