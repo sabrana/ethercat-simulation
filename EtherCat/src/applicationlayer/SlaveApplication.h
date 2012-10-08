@@ -26,9 +26,13 @@
  */
 class SlaveApplication : public cSimpleModule
 {
-  protected:
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    public:
+        int counter;
+    protected:
+        virtual void initialize();
+        virtual void handleMessage(cMessage *msg);
+        virtual void finish();
+
 };
 
 #endif

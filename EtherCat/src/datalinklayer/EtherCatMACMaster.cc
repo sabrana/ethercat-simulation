@@ -188,7 +188,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
        if(strcmp(msg->getName(),"EtherType")==0){
                   type5++;
        }
-       if(strcmp(msg->getName(),"PDU")==0){
+       if(strcmp(msg->getName(),"PDU")==0 || strcmp(msg->getName(),"END_PDU")==0 ||  strcmp(msg->getName(),"Frame HDR")==0  ){
                   type6++;
        }
        if(strcmp(msg->getName(),"FCS")==0){

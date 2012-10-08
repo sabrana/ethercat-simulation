@@ -21,14 +21,20 @@ Define_Module(SlaveApplication);
 void SlaveApplication::initialize()
 {
     // TODO - Generated method body
+    counter=0;
 }
 
 void SlaveApplication::handleMessage(cMessage *msg)
 {
+    counter++;
     EV << "I'm EtherCatApplicationSlave and receive payload from SlaveMAC"<< msg << "\n";
     cPacket *byte = (cPacket*)msg;
     //EtherCatFrame *payload = (EtherCatFrame*)msg;
     send(byte,"out");
     EV << "I'm MasterApplication and RE-send payload"<< byte << "\n";
 
+}
+
+void SlaveApplication::finish(){
+        ev << "Payload Received:" << counter  << "\n";
 }
