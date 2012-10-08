@@ -36,7 +36,6 @@ void MasterApplication::initialize()
 
 
     for(int i=1;i<=npdu;i++){
-        payload->getPdu(i).ADP=-i;
         int dimPDU=uniform(13,dim_max_pdu);
         payload->getPdu(i).LEN=dimPDU;
         payload->getPdu(i).ADP=-i;

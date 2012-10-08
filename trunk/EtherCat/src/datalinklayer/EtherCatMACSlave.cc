@@ -62,17 +62,15 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
         EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
-
-        counter++;
-
-        if(strcmp(msg->getName(),"PDU_END")==0){
+        EV << "GET NAME:" << msg->getName() << "\n";
+        if(strcmp(msg->getName(),"END_PDU")==0){
+            counter++;
             cMsgPar *adp=&msg->par("ADP");
-            long address=(long)adp->getObjectValue();
+            long address=adp->longValue();
             address++;
             adp->setLongValue(address);
 
             if(address==0){
-
             cPacket *byte = (cPacket*)msg;
             ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
             send(byte,"upperLayerOut");
@@ -93,15 +91,6 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
         }
 
-
-
-
-
-
-
-
-
-
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
 
         tempMsg = msg->dup();
@@ -117,6 +106,8 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     else
         EV << "Error"<<endl;
 }
+void EtherCatMACSlave::finish(){
+    //EV << "I'm EtherCatMACSlave and counter "<< counter << "\n";
 
-
+}
 
