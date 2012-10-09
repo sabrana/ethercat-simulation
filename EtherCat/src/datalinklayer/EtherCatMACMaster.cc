@@ -40,11 +40,12 @@ EtherCatMACMaster::~EtherCatMACMaster()
 void EtherCatMACMaster::initialize()
 {
         //delay fisso pari al parametro di configurazione
-        delay=par("delay");
+        //delay=par("delay");
 
         //delay variabile con max pari al parametro di configurazione
-        //int delayMax=par("delay");
-        //delay=uniform(0,delayMax);
+        int delayMax=par("delay");
+        delay=uniform(0.000009,delayMax);//delayMax=0.000001;
+        ev << "delay:"<< delay;
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -52,10 +53,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
     if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
-
                 send(msg->dup(),"phys$o");
-
-
     }
 
     if(msg->getArrivalGate()==gate("upperLayerIn")){
@@ -135,7 +133,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
             //ottengo il numero di pdu
             int dim=0;
-                for(int i=0;i<frame->getPduArraySize();i++){
+            for(int i=0;i<frame->getPduArraySize();i++){
 
                     if(frame->getPdu(i).LEN!=0)
                         dim++;
