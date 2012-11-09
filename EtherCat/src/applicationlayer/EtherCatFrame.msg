@@ -16,6 +16,8 @@
 //
 // TODO generated message class
 //
+
+
 struct type12PDU
 {
     unsigned char CMD; // 0x01 command APRD
@@ -23,7 +25,11 @@ struct type12PDU
     short ADP; // auto increment address
     short ADO; // Physical memory or register address
     int LEN=0; // unsigned 11bit
-    char reserved; // unsigned 3bit
+    //split reserved
+    bool global; // unsigned 3bit
+    int timeStamp; // create the frame
+    int deadline; // the timeStamp
+    
     bool C;// unsigned 1bit
     bool NEXT; // unsigned 1bit
     short IRQ; //External event 
@@ -36,5 +42,4 @@ packet EtherCatFrame {
     char reserved;
     char type;
     type12PDU pdu[115];
-   
 }

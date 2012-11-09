@@ -26,7 +26,9 @@ struct type12PDU
     short ADP;
     short ADO;
     int LEN;
-    char reserved;
+    bool global;
+    int timeStamp;
+    int deadline;
     bool C;
     bool NEXT;
     short IRQ;
@@ -45,7 +47,6 @@ void doUnpacking(cCommBuffer *b, type12PDU& a);
  *     char reserved;
  *     char type;
  *     type12PDU pdu[115];
- *    
  * }
  * </pre>
  */
@@ -81,7 +82,6 @@ class EtherCatFrame : public ::cPacket
     virtual char getType() const;
     virtual void setType(char type);
     virtual unsigned int getPduArraySize() const;
-    virtual unsigned int getPduArrayRealSize();
     virtual type12PDU& getPdu(unsigned int k);
     virtual const type12PDU& getPdu(unsigned int k) const {return const_cast<EtherCatFrame*>(this)->getPdu(k);}
     virtual void setPdu(unsigned int k, const type12PDU& pdu);

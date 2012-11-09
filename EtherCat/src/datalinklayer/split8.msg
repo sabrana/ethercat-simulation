@@ -15,6 +15,6 @@
 
 packet split8{
 
-char vector[8];
+	char vector[8];
 
 }

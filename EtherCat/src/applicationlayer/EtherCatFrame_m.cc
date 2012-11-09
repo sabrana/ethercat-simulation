@@ -37,7 +37,9 @@ type12PDU::type12PDU()
     ADP = 0;
     ADO = 0;
     LEN = 0;
-    reserved = 0;
+    global = 0;
+    timeStamp = 0;
+    deadline = 0;
     C = 0;
     NEXT = 0;
     IRQ = 0;
@@ -52,7 +54,9 @@ void doPacking(cCommBuffer *b, type12PDU& a)
     doPacking(b,a.ADP);
     doPacking(b,a.ADO);
     doPacking(b,a.LEN);
-    doPacking(b,a.reserved);
+    doPacking(b,a.global);
+    doPacking(b,a.timeStamp);
+    doPacking(b,a.deadline);
     doPacking(b,a.C);
     doPacking(b,a.NEXT);
     doPacking(b,a.IRQ);
@@ -67,7 +71,9 @@ void doUnpacking(cCommBuffer *b, type12PDU& a)
     doUnpacking(b,a.ADP);
     doUnpacking(b,a.ADO);
     doUnpacking(b,a.LEN);
-    doUnpacking(b,a.reserved);
+    doUnpacking(b,a.global);
+    doUnpacking(b,a.timeStamp);
+    doUnpacking(b,a.deadline);
     doUnpacking(b,a.C);
     doUnpacking(b,a.NEXT);
     doUnpacking(b,a.IRQ);
@@ -122,7 +128,7 @@ const char *type12PDUDescriptor::getProperty(const char *propertyname) const
 int type12PDUDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 11+basedesc->getFieldCount(object) : 11;
+    return basedesc ? 13+basedesc->getFieldCount(object) : 13;
 }
 
 unsigned int type12PDUDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -145,8 +151,10 @@ unsigned int type12PDUDescriptor::getFieldTypeFlags(void *object, int field) con
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<11) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<13) ? fieldTypeFlags[field] : 0;
 }
 
 const char *type12PDUDescriptor::getFieldName(void *object, int field) const
@@ -163,14 +171,16 @@ const char *type12PDUDescriptor::getFieldName(void *object, int field) const
         "ADP",
         "ADO",
         "LEN",
-        "reserved",
+        "global",
+        "timeStamp",
+        "deadline",
         "C",
         "NEXT",
         "IRQ",
         "DATA",
         "WKC",
     };
-    return (field>=0 && field<11) ? fieldNames[field] : NULL;
+    return (field>=0 && field<13) ? fieldNames[field] : NULL;
 }
 
 int type12PDUDescriptor::findField(void *object, const char *fieldName) const
@@ -182,12 +192,14 @@ int type12PDUDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='A' && strcmp(fieldName, "ADP")==0) return base+2;
     if (fieldName[0]=='A' && strcmp(fieldName, "ADO")==0) return base+3;
     if (fieldName[0]=='L' && strcmp(fieldName, "LEN")==0) return base+4;
-    if (fieldName[0]=='r' && strcmp(fieldName, "reserved")==0) return base+5;
-    if (fieldName[0]=='C' && strcmp(fieldName, "C")==0) return base+6;
-    if (fieldName[0]=='N' && strcmp(fieldName, "NEXT")==0) return base+7;
-    if (fieldName[0]=='I' && strcmp(fieldName, "IRQ")==0) return base+8;
-    if (fieldName[0]=='D' && strcmp(fieldName, "DATA")==0) return base+9;
-    if (fieldName[0]=='W' && strcmp(fieldName, "WKC")==0) return base+10;
+    if (fieldName[0]=='g' && strcmp(fieldName, "global")==0) return base+5;
+    if (fieldName[0]=='t' && strcmp(fieldName, "timeStamp")==0) return base+6;
+    if (fieldName[0]=='d' && strcmp(fieldName, "deadline")==0) return base+7;
+    if (fieldName[0]=='C' && strcmp(fieldName, "C")==0) return base+8;
+    if (fieldName[0]=='N' && strcmp(fieldName, "NEXT")==0) return base+9;
+    if (fieldName[0]=='I' && strcmp(fieldName, "IRQ")==0) return base+10;
+    if (fieldName[0]=='D' && strcmp(fieldName, "DATA")==0) return base+11;
+    if (fieldName[0]=='W' && strcmp(fieldName, "WKC")==0) return base+12;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -205,14 +217,16 @@ const char *type12PDUDescriptor::getFieldTypeString(void *object, int field) con
         "short",
         "short",
         "int",
-        "char",
+        "bool",
+        "int",
+        "int",
         "bool",
         "bool",
         "short",
         "char",
         "short",
     };
-    return (field>=0 && field<11) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<13) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *type12PDUDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -257,12 +271,14 @@ std::string type12PDUDescriptor::getFieldAsString(void *object, int field, int i
         case 2: return long2string(pp->ADP);
         case 3: return long2string(pp->ADO);
         case 4: return long2string(pp->LEN);
-        case 5: return long2string(pp->reserved);
-        case 6: return bool2string(pp->C);
-        case 7: return bool2string(pp->NEXT);
-        case 8: return long2string(pp->IRQ);
-        case 9: return long2string(pp->DATA);
-        case 10: return long2string(pp->WKC);
+        case 5: return bool2string(pp->global);
+        case 6: return long2string(pp->timeStamp);
+        case 7: return long2string(pp->deadline);
+        case 8: return bool2string(pp->C);
+        case 9: return bool2string(pp->NEXT);
+        case 10: return long2string(pp->IRQ);
+        case 11: return long2string(pp->DATA);
+        case 12: return long2string(pp->WKC);
         default: return "";
     }
 }
@@ -282,12 +298,14 @@ bool type12PDUDescriptor::setFieldAsString(void *object, int field, int i, const
         case 2: pp->ADP = string2long(value); return true;
         case 3: pp->ADO = string2long(value); return true;
         case 4: pp->LEN = string2long(value); return true;
-        case 5: pp->reserved = string2long(value); return true;
-        case 6: pp->C = string2bool(value); return true;
-        case 7: pp->NEXT = string2bool(value); return true;
-        case 8: pp->IRQ = string2long(value); return true;
-        case 9: pp->DATA = string2long(value); return true;
-        case 10: pp->WKC = string2long(value); return true;
+        case 5: pp->global = string2bool(value); return true;
+        case 6: pp->timeStamp = string2long(value); return true;
+        case 7: pp->deadline = string2long(value); return true;
+        case 8: pp->C = string2bool(value); return true;
+        case 9: pp->NEXT = string2bool(value); return true;
+        case 10: pp->IRQ = string2long(value); return true;
+        case 11: pp->DATA = string2long(value); return true;
+        case 12: pp->WKC = string2long(value); return true;
         default: return false;
     }
 }
@@ -312,8 +330,10 @@ const char *type12PDUDescriptor::getFieldStructName(void *object, int field) con
         NULL,
         NULL,
         NULL,
+        NULL,
+        NULL,
     };
-    return (field>=0 && field<11) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<13) ? fieldStructNames[field] : NULL;
 }
 
 void *type12PDUDescriptor::getFieldStructPointer(void *object, int field, int i) const
@@ -416,18 +436,6 @@ void EtherCatFrame::setType(char type)
 unsigned int EtherCatFrame::getPduArraySize() const
 {
     return 115;
-}
-
-unsigned int EtherCatFrame::getPduArrayRealSize()
-{
-    int dim=0;
-    for(int i=0;i<this->getPduArraySize();i++){
-
-        if(this->getPdu(i).LEN!=0)
-            dim++;
-
-    }
-
 }
 
 type12PDU& EtherCatFrame::getPdu(unsigned int k)

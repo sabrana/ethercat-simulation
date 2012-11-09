@@ -17,6 +17,12 @@
 #include "EthernetFrame_m.h"
 #include "split8_m.h"
 
+bool stampFinish=false;
+int timeStart;
+
+
+
+
 EtherCatMACSlave::EtherCatMACSlave()
 {
     // Set the pointer to NULL, so that the destructor won't crash
@@ -40,6 +46,8 @@ void EtherCatMACSlave::initialize()
     delay=par("delay");
     event = new cMessage("event");
     tempMsg = NULL;
+    nContestWin=0;
+    relativeDeadline=1;
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
@@ -48,15 +56,12 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
     if(msg->isSelfMessage()){
             EV << "I'm EtherCatMACSlave and receive pyload "<< msg << "\n";
-
-
-
             if(gate("phys2$o")->getNextGate()->isConnected()){
-                send(tempMsg->dup(),"phys2$o");
-                EV << "I'm EtherCatMACSlave and send "<< tempMsg << "to other Slave\n";
+                send(msg->dup(),"phys2$o");
+                EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
             }else{
                 EV << "I'm EtherCatMACSlave and finish chain"<<endl;
-                send(tempMsg->dup(),"phys1$o");
+                send(msg->dup(),"phys1$o");
             }
         }
 
@@ -65,12 +70,58 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         EV << "GET NAME:" << msg->getName() << "\n";
         if(strcmp(msg->getName(),"END_PDU")==0){
             counter++;
+
+            //identifico il nodo
+            cMsgPar *nodeNumber=&msg->par("nodeNumber");
+            long nodeNumberValue=nodeNumber->longValue();
+            nodeNumberValue++;
+            node=nodeNumberValue;
+            if(node==0){
+                node=nodeNumberValue;
+            }
+            nodeNumber->setLongValue(nodeNumberValue);
+
+
+
+            //operazioni sull'indirizzo sequenziale
             cMsgPar *adp=&msg->par("ADP");
             long address=adp->longValue();
             address++;
             adp->setLongValue(address);
 
-            if(address==0){
+            //operazioni per recuperare il parametro di flag global
+            //ovvero se il pacchetto vale per tutti i messaggi
+            cMsgPar *global=&msg->par("global");
+            bool globalValue=global->boolValue();
+
+
+
+            if(globalValue){
+                cMsgPar *timeStamp=&msg->par("timeStamp");
+                long timeStampValue=timeStamp->longValue();
+
+                //timeStamp->setLongValue(timeStampValue);
+                timeStart=timeStampValue;
+                stampFinish=true;
+
+                relativeDeadline=uniform (1.0, 100.0);//simTime().raw();
+
+
+                ev << "Global Message arrived:" << relativeDeadline << "\n";
+                cMsgPar *deadl=&msg->par("deadl");
+                long deadlValue=deadl->longValue();
+
+                if(checkPriority(msg) )
+                {
+                    deadl->setLongValue(relativeDeadline);
+                }
+
+                cPacket *byte = (cPacket*)msg;
+                send(byte,"upperLayerOut");
+            }
+
+
+            else if(address==0){
                     cPacket *byte = (cPacket*)msg;
                     ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
                     send(byte,"upperLayerOut");
@@ -78,15 +129,14 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 }
             else{
                     tempMsg = msg->dup();
-                    scheduleAt(simTime()+delay, event->dup());
+                    scheduleAt(simTime()+delay, msg->dup());//era event
                     //scheduleAt(simTime()+uniform(0,1), event->dup());
-
                 }
         }
 
         else{
             tempMsg = msg->dup();
-            scheduleAt(simTime()+delay, event->dup());
+            scheduleAt(simTime()+delay, msg->dup());//era event
             //scheduleAt(simTime()+uniform(0,1), event->dup());
 
         }
@@ -94,12 +144,21 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
 
         tempMsg = msg->dup();
-        scheduleAt(simTime()+delay, event->dup());
+        scheduleAt(simTime()+delay, msg->dup());//era event
         //scheduleAt(simTime()+uniform(0,1), event->dup());
 
 
     }else if(msg->getArrivalGate()==gate("phys2$i")){
             EV << "I'm EtherCatMACSlave and receive return ethf "<< tempMsg << "\n";
+            if(strcmp(msg->getName(),"END_PDU")==0){
+                cMsgPar *deadl=&msg->par("deadl");
+                long deadlineValue=deadl->longValue();
+                EV << "Verifico se vinco relDed: "<< relativeDeadline << " dedVal: "<< deadlineValue << "\n";
+                if(relativeDeadline==deadlineValue){
+                    nContestWin++;
+                    EV << "Ho vinto \n";
+                }
+            }
             send(msg,"phys1$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to prev slave\n";
         }
@@ -107,7 +166,25 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         EV << "Error"<<endl;
 }
 void EtherCatMACSlave::finish(){
-    //EV << "I'm EtherCatMACSlave and counter "<< counter << "\n";
+    if(stampFinish){
+        EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
+        EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is "<< relativeDeadline << "\n";
+        //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
+        EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+    }
+}
+
+bool EtherCatMACSlave::checkPriority(cMessage *msg){
+
+    cMsgPar *deadl=&msg->par("deadl");
+    long deadlValue=deadl->longValue();
+    if(deadlValue==0 || deadlValue<relativeDeadline ){
+        return true;
+    }
+    return false;
+}
+
+void EtherCatMACSlave::queueGenerator(){
 
 }
 

@@ -37,8 +37,18 @@ void MasterApplication::initialize()
 
     for(int i=1;i<=npdu;i++){
         int dimPDU=uniform(13,dim_max_pdu);
+
         payload->getPdu(i).LEN=dimPDU;
+        //setto i valori degli indirizzi sequenziali
         payload->getPdu(i).ADP=-i;
+
+        if(i==1){
+            payload->getPdu(i).global=true;
+        }
+        else{
+            payload->getPdu(i).global=false;
+        }
+
         dimPayload+=dimPDU;
         ev<< "dim PDU: "<<dimPDU<<"; dim payload"<<payload<<"" <<i<<" "<<dimPayload<<"\n";
         //dim_pdu-=dimPayload;

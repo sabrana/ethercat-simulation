@@ -19,6 +19,8 @@
 
 Define_Module(EtherCatMACMaster);
 
+bool onlyPdu=true;
+
 EtherCatMACMaster::EtherCatMACMaster()
 {
     byteReturn=0;
@@ -53,7 +55,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
     if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
-                send(msg->dup(),"phys$o");
+        send(msg->dup(),"phys$o");
     }
 
     if(msg->getArrivalGate()==gate("upperLayerIn")){
@@ -63,7 +65,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
         EV << "Scheduling first send to t=5.0s\n";
 
 
-            int byte=1;
+        // TUTTI I FRAME (DEFAULT)
+        if(!onlyPdu){
+        int byte=1;
 
             //preamble ethernet frame
             for(byte; byte<=7; byte++){
@@ -85,8 +89,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             //Destination MAC Address ethernet frame
             for(byte; byte<=14; byte++){
                 //preamble ethernet frame
-
-
                 ev << "Adding " << byte-8 <<" /6 packet of DA ethernet frame"<< endl;
                 cPacket *c=new cPacket("DA");
                 c->setByteLength(1);
@@ -149,13 +151,36 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                         //settiamo il valore del frame HDR nell'ultimo byte inviato
                         if(byte==start+pdu.LEN){
                             c->setName("END_PDU");
+
                             cMsgPar *length=new cMsgPar("LEN");
                             length->setLongValue(length_payload);
+
                             cMsgPar *adp=new cMsgPar("ADP");
                             adp->setLongValue(pdu.ADP);
+
+                            cMsgPar *global=new cMsgPar("global");
+                            global->setBoolValue(pdu.global);
+
+                            cMsgPar *timeStamp=new cMsgPar("timeStamp");
+                            SimTime timer=simTime()+delay*byte;
+                            timeStamp->setLongValue(timer.raw());
+
+                            cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
+                            nodeNumber->setLongValue(0);
+
+                            cMsgPar *deadline=new cMsgPar("deadl");
+                            deadline->setLongValue(0);
+
+
                             c->addPar(length);
                             c->addPar(adp);
+                            c->addPar(global);
+                            c->addPar(timeStamp);
+                            c->addPar(nodeNumber);
+                            c->addPar(deadline);
+
                         }
+
                     scheduleAt(simTime()+delay*byte, c->dup());
                 }
                 start=start+=pdu.LEN;
@@ -170,6 +195,74 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                 c->setByteLength(1);
                 scheduleAt(simTime()+delay*byte, c->dup());
             }
+        }
+
+        // MANDIAMO SOLO I PDU
+        else{
+            //PayLoad ethernet frame
+            EtherCatFrame* frame=(EtherCatFrame*)msg;
+            int length_payload=frame->getLength();
+            int dim=0;
+            int start=24;
+            int byte=24;
+                for(int i=0;i<frame->getPduArraySize();i++){
+
+                        if(frame->getPdu(i).LEN!=0)
+                            dim++;
+                }
+
+                for(int i=0;i<=dim;i++){
+                    type12PDU pdu=frame->getPdu(i);
+                        for(byte; byte<=start+pdu.LEN; byte++){
+                        ev << "Adding " << byte-22 <<" /"<<length_payload<<" packet of PayLoad ethernet frame: PDU "<<i<< endl;
+                            cPacket *c=new cPacket("PDU");
+                            c->setByteLength(1);
+                            //settiamo il valore del frame HDR nell'ultimo byte inviato
+                            if(byte==start+pdu.LEN){
+                                c->setName("END_PDU");
+
+                                cMsgPar *length=new cMsgPar("LEN");
+                                length->setLongValue(length_payload);
+
+                                cMsgPar *adp=new cMsgPar("ADP");
+                                adp->setLongValue(pdu.ADP);
+
+                                cMsgPar *global=new cMsgPar("global");
+                                global->setBoolValue(pdu.global);
+
+                                cMsgPar *timeStamp=new cMsgPar("timeStamp");
+                                SimTime timer=simTime()+delay*byte;
+                                timeStamp->setLongValue(timer.raw());
+
+                                cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
+                                nodeNumber->setLongValue(0);
+
+                                cMsgPar *deadline=new cMsgPar("deadline");
+                                deadline->setLongValue(0);
+
+                                cMsgPar *deadl=new cMsgPar("deadl");
+                                deadl->setLongValue(0);
+
+
+                                c->addPar(length);
+                                c->addPar(adp);
+                                c->addPar(global);
+                                c->addPar(timeStamp);
+                                c->addPar(nodeNumber);
+                                c->addPar(deadl);
+                                c->addPar(deadline);
+
+                            }
+
+                            // MANDO SOLO I PDU END OVVERO SOLO QUELLI CONTENENTI INFORMAZIONI
+                            else{
+                                continue;
+                            }
+
+                        scheduleAt(simTime()+delay*byte, c->dup());
+                    }
+                }
+        }
 
 
 

@@ -25,9 +25,13 @@ class EtherCatMACSlave : public cSimpleModule
 {
   private:
     simtime_t delay;
+    cQueue queue;
     cMessage *event; // pointer to the event object which we'll use for timing
     cMessage *tempMsg; // variable to remember the message until we send it back
     int counter;
+    int relativeDeadline;
+    int node;
+    int nContestWin;
   public:
     EtherCatMACSlave();
     virtual ~EtherCatMACSlave();
@@ -36,6 +40,8 @@ class EtherCatMACSlave : public cSimpleModule
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
+    virtual bool checkPriority(cMessage *msg);
+    virtual void queueGenerator();
 };
 
 #endif
