@@ -19,7 +19,7 @@
 
 Define_Module(EtherCatMACMaster);
 
-bool onlyPdu=true;
+bool onlyEndPdu=true;
 
 EtherCatMACMaster::EtherCatMACMaster()
 {
@@ -66,7 +66,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
         // TUTTI I FRAME (DEFAULT)
-        if(!onlyPdu){
+        if(!onlyEndPdu){
         int byte=1;
 
             //preamble ethernet frame
