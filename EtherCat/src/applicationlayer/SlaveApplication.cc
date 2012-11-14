@@ -32,9 +32,12 @@ void SlaveApplication::handleMessage(cMessage *msg)
     //EtherCatFrame *payload = (EtherCatFrame*)msg;
     send(byte,"out");
     EV << "I'm MasterApplication and RE-send payload"<< byte << "\n";
+    cMsgPar *global=&msg->par("global");
+    bool globalValue=global->boolValue();
+
 
 }
 
 void SlaveApplication::finish(){
-        ev << "Payload Received:" << counter  << "\n";
+        ev << "Payload Received: " << counter <<  "\n";
 }
