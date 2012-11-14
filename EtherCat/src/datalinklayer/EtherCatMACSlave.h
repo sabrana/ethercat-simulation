@@ -34,7 +34,7 @@ class EtherCatMACSlave : public cSimpleModule
     int prob;
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
                        // non riscrivere lo stesso valore nella frame successiva
-    int relativeDeadline;
+    long relativeDeadline;
     int node;
     int timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
