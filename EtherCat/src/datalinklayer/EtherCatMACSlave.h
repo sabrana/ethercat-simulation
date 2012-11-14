@@ -29,6 +29,7 @@ class EtherCatMACSlave : public cSimpleModule
     simtime_t delay;
     cQueue queue;
     cQueue queueTemp;
+    int globalPacket;
     int scenario;
     int prob;
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da

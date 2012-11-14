@@ -38,6 +38,7 @@ void EtherCatMACSlave::initialize()
     prob=par("probability");
     nContestWin=0;
     relativeDeadline=1;
+    globalPacket=0;
     underControl=false;
 }
 
@@ -92,6 +93,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
             EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?: "<<globalValue<<"\n";
 
             if(globalValue){
+                globalPacket++;
                 queueGenerator();
                 stampFinish=true;
                 ev << "Global Message arrived:" << relativeDeadline << "\n";
@@ -258,7 +260,20 @@ void EtherCatMACSlave::queueGenerator(){
     if(scenario==2){
         relativeDeadline=uniform (0,256);
         char result[8]={'0','0','0','0','0','0','0','0'};
-        itoa (relativeDeadline,result,2);
+        char temp[8];
+        itoa (relativeDeadline,temp,2);
+        ev <<"temp:"<< temp << "\n";
+        int shift=0;
+        for(int i=0;i<8;i++){
+            if(temp[i]!='1' && temp[i]!='0'){
+                shift++;
+            }
+        }
+        for(int j=7;j>=shift;j--){
+            result[j]=temp[j-shift];
+        }
+        //result[8]=' ';
+        ev <<"result:"<< result << "\n";
         cMsgPar *bitWise=new cMsgPar("bitWise");
         bitWise->setStringValue(result);
         queue.insert(bitWise->dup());
@@ -270,37 +285,77 @@ void EtherCatMACSlave::queueGenerator(){
 
 void EtherCatMACSlave::finish(){
     if(stampFinish){
+        EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
+        EV << "I'm EtherCatMACSlave "<< node<<" and received " << globalPacket << " globalPacket"<< "\n";
+        EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+        EV <<"FRAME GENERATE: "<<queueTemp.length()<< "\n";
+        EV <<"FRAME SCHEDULATE: "<<queueTemp.length() - queue.length()<< "\n";
+        EV <<"FRAME RIMASTE IN CODA: "<<queue.length()<< "\n";
         if(scenario==1){
-            EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
-            EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is ";
-            for(int i=0;i<queue.length();i++){
-                cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
-                EV <<  par->longValue() << ", ";
-            }
-            EV <<"\nTemp:";
+            EV <<"LISTA FRAME GENERATE:[";
             for(int i=0;i<queueTemp.length();i++){
-                        cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
-                        EV <<  par->longValue() << ", ";
+                cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                EV <<  par->longValue();
+                if(i+1<queueTemp.length()){
+                    EV << ",";
+                }
             }
-            EV <<"\n";
-            //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
-            EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+            EV <<"]\n";
+            EV <<"LISTA FRAME LISTA FRAME SCHEDULATE:[";
+                for(int i=0;i<queueTemp.length()-queue.length();i++){
+                   cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                   EV <<  par->longValue();
+                   if(i+1<queueTemp.length()-queue.length()){
+                       EV << ",";
+                   }
+             }
+             EV <<"]\n";
+            EV <<"LISTA FRAME RIMASTE IN CODA:[";
+            for(int i=0;i<queue.length();i++){
+               cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+               EV <<  par->longValue();
+               if(i+1<queue.length()){
+                   EV << ",";
+               }
+           }
+           EV <<"]\n";
+
         }
         if(scenario==2){
-            EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
-            EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is ";
+            EV <<"LISTA FRAME GENERATE:[";
+            for(int i=0;i<queueTemp.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                for(int k=0;k<8;k++){
+                    EV <<  par->stringValue()[k];
+                }
+                if(i+1<queueTemp.length()){
+                    EV << ",";
+                }
+            }
+            EV <<"]\n";
+            EV <<"LISTA FRAME SCHEDULATE:[";
+            for(int i=0;i<queueTemp.length()-queue.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                for(int k=0;k<8;k++){
+                    EV <<  par->stringValue()[k];
+                }
+                if(i+1<queueTemp.length() - queue.length()){
+                    EV << ",";
+                }
+            }
+            EV <<"]\n";
+            EV <<"LISTA FRAME RIMASTE IN CODA:[";
             for(int i=0;i<queue.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
-                EV <<  par->stringValue() << ", ";
+                for(int k=0;k<8;k++){
+                    EV <<  par->stringValue()[k];
+                }
+                if(i+1<queue.length()){
+                    EV << ",";
+                }
             }
-            EV <<"\nTemp:";
-            for(int i=0;i<queueTemp.length();i++){
-                        cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
-                        EV <<  par->stringValue() << ", ";
-            }
-            EV <<"\n";
-            //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
-            EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+            EV <<"]\n";
+
         }
     }
 }

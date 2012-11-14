@@ -251,9 +251,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 bitWise->setStringValue("11111111");
                                 // questa è la frame a più bassa priorità
 
-
-
-
                                 c->addPar(length);
                                 c->addPar(adp);
                                 c->addPar(global);
