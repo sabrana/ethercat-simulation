@@ -17,6 +17,8 @@
 #define __ETHERCAT_ETHERCATMACSLAVE_H_
 
 #include <omnetpp.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * TODO - Generated class
@@ -26,11 +28,15 @@ class EtherCatMACSlave : public cSimpleModule
   private:
     simtime_t delay;
     cQueue queue;
-    cMessage *event; // pointer to the event object which we'll use for timing
-    cMessage *tempMsg; // variable to remember the message until we send it back
-    int counter;
+    cQueue queueTemp;
+    int scenario;
+    int prob;
+    bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
+                       // non riscrivere lo stesso valore nella frame successiva
     int relativeDeadline;
     int node;
+    int timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
+                   // alla partenza della frame
     int nContestWin;
   public:
     EtherCatMACSlave();
@@ -40,8 +46,9 @@ class EtherCatMACSlave : public cSimpleModule
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
-    virtual bool checkPriority(cMessage *msg);
+    virtual void setDeadlineOnFrame(cMessage *msg);
     virtual void queueGenerator();
+    virtual bool controlIfIwon(cMessage *msg);
 };
 
 #endif

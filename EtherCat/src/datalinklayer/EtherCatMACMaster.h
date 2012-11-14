@@ -18,6 +18,7 @@
 
 #include <omnetpp.h>
 #include "EthernetFrame_m.h"
+
 #include "../applicationlayer/EtherCatFrame_m.h"
 
 /**
@@ -27,6 +28,7 @@ class EtherCatMACMaster : public cSimpleModule
 {
   private:
       simtime_t delay;
+      bool onlyEndPdu;
       int type1;
       int type2;
       int type3;
@@ -37,6 +39,7 @@ class EtherCatMACMaster : public cSimpleModule
       int byteReturn;
       int valueData;
   public:
+
     EtherCatMACMaster();
     virtual ~EtherCatMACMaster();
 
