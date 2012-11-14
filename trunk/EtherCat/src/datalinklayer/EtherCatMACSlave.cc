@@ -15,28 +15,18 @@
 
 #include "EtherCatMACSlave.h"
 #include "EthernetFrame_m.h"
-#include "split8_m.h"
 
 bool stampFinish=false;
-int timeStart;
 
 
 
 
 EtherCatMACSlave::EtherCatMACSlave()
 {
-    // Set the pointer to NULL, so that the destructor won't crash
-    // even if initialize() doesn't get called because of a runtime
-    // error or user cancellation during the startup process.
-    event = tempMsg = NULL;
-    counter=0;
 }
 
 EtherCatMACSlave::~EtherCatMACSlave()
 {
-    // Dispose of dynamically allocated the objects
-    cancelAndDelete(event);
-    delete tempMsg;
 }
 
 Define_Module(EtherCatMACSlave);
@@ -44,10 +34,11 @@ Define_Module(EtherCatMACSlave);
 void EtherCatMACSlave::initialize()
 {
     delay=par("delay");
-    event = new cMessage("event");
-    tempMsg = NULL;
+    scenario=par("scenario");
+    prob=par("probability");
     nContestWin=0;
     relativeDeadline=1;
+    underControl=false;
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
@@ -60,16 +51,21 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 send(msg->dup(),"phys2$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
             }else{
+
                 EV << "I'm EtherCatMACSlave and finish chain"<<endl;
+                if(strcmp(msg->getName(),"END_PDU")==0){
+                    if(controlIfIwon(msg)){
+                        EV << "Ho vinto \n";
+                    }
+                }
                 send(msg->dup(),"phys1$o");
             }
         }
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
-        EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << "\n";
+       // EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?:"<<  \n";
         EV << "GET NAME:" << msg->getName() << "\n";
         if(strcmp(msg->getName(),"END_PDU")==0){
-            counter++;
 
             //identifico il nodo
             cMsgPar *nodeNumber=&msg->par("nodeNumber");
@@ -80,8 +76,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 node=nodeNumberValue;
             }
             nodeNumber->setLongValue(nodeNumberValue);
-
-
+            //lancio il generatore di code
 
             //operazioni sull'indirizzo sequenziale
             cMsgPar *adp=&msg->par("ADP");
@@ -94,28 +89,13 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
             cMsgPar *global=&msg->par("global");
             bool globalValue=global->boolValue();
 
-
+            EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?: "<<globalValue<<"\n";
 
             if(globalValue){
-                cMsgPar *timeStamp=&msg->par("timeStamp");
-                long timeStampValue=timeStamp->longValue();
-
-                //timeStamp->setLongValue(timeStampValue);
-                timeStart=timeStampValue;
+                queueGenerator();
                 stampFinish=true;
-
-                relativeDeadline=uniform (1.0, 100.0);//simTime().raw();
-
-
                 ev << "Global Message arrived:" << relativeDeadline << "\n";
-                cMsgPar *deadl=&msg->par("deadl");
-                long deadlValue=deadl->longValue();
-
-                if(checkPriority(msg) )
-                {
-                    deadl->setLongValue(relativeDeadline);
-                }
-
+                setDeadlineOnFrame(msg);
                 cPacket *byte = (cPacket*)msg;
                 send(byte,"upperLayerOut");
             }
@@ -128,34 +108,29 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                     EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
                 }
             else{
-                    tempMsg = msg->dup();
+
                     scheduleAt(simTime()+delay, msg->dup());//era event
                     //scheduleAt(simTime()+uniform(0,1), event->dup());
                 }
         }
 
         else{
-            tempMsg = msg->dup();
             scheduleAt(simTime()+delay, msg->dup());//era event
             //scheduleAt(simTime()+uniform(0,1), event->dup());
 
         }
 
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
-
-        tempMsg = msg->dup();
         scheduleAt(simTime()+delay, msg->dup());//era event
         //scheduleAt(simTime()+uniform(0,1), event->dup());
 
 
     }else if(msg->getArrivalGate()==gate("phys2$i")){
-            EV << "I'm EtherCatMACSlave and receive return ethf "<< tempMsg << "\n";
             if(strcmp(msg->getName(),"END_PDU")==0){
-                cMsgPar *deadl=&msg->par("deadl");
-                long deadlineValue=deadl->longValue();
-                EV << "Verifico se vinco relDed: "<< relativeDeadline << " dedVal: "<< deadlineValue << "\n";
-                if(relativeDeadline==deadlineValue){
-                    nContestWin++;
+                //cMsgPar *deadl=&msg->par("deadl");
+                //long deadlineValue=deadl->longValue();
+                //EV << "Verifico se vinco relDed: "<< relativeDeadline << " dedVal: "<< deadlineValue << "\n";
+                if(controlIfIwon(msg)){
                     EV << "Ho vinto \n";
                 }
             }
@@ -165,26 +140,169 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     else
         EV << "Error"<<endl;
 }
-void EtherCatMACSlave::finish(){
-    if(stampFinish){
-        EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
-        EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is "<< relativeDeadline << "\n";
-        //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
-        EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+
+
+bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
+    // verifico che ho scritto in qualche frame il mio valore, ovvero
+    // che sto partecipando ad una contesa
+    if(!underControl){
+        return false;
     }
-}
+    cMsgPar *timeStamp=&msg->par("timeStamp");
+    long timeStampValue=timeStamp->longValue();
+    // verifico che sto confrontando lo stesso frame che ho settato in partenza
+    if(timeStampValue!=timeStart){
+        return false;
+    }
 
-bool EtherCatMACSlave::checkPriority(cMessage *msg){
+    // se siamo arrivati qui significa che stiamo controllando la frame giusta
+    // sia che vinco sia che perdo, posso ripartecipare alle contese
+    underControl=false;
 
-    cMsgPar *deadl=&msg->par("deadl");
-    long deadlValue=deadl->longValue();
-    if(deadlValue==0 || deadlValue<relativeDeadline ){
-        return true;
+    if(scenario==1){
+        if(queue.length()>0){
+            cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
+            long queueHeadValue=queueHead->longValue();
+            cMsgPar *deadl=&msg->par("deadl");
+            long deadlineValue=deadl->longValue();
+            EV << "confronto Se ho vinto, la testa vale:"<< queueHead->longValue() << "\n";
+            if(queueHeadValue==deadlineValue){
+                nContestWin++;
+                queue.pop();
+                return true;
+            }
+        }
+    }
+    if(scenario==2){
+        if(queue.length()>0){
+            cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
+            std::string stringValue= queueHead->stringValue();
+            cMsgPar *bitWise=&msg->par("bitWise");
+            std::string bitWiseValue=bitWise->stringValue();
+            EV << "confronto Se ho vinto, la testa vale:"<< queueHead << "\n";
+            if(stringValue==bitWiseValue){
+                nContestWin++;
+                queue.pop();
+                return true;
+            }
+        }
     }
     return false;
 }
 
+void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
+    if(underControl)
+    {
+        return;
+    }
+    if(scenario==1){
+        cMsgPar *deadl=&msg->par("deadl");
+        long deadlValue=deadl->longValue();
+        EV << "I'm EtherCatMACSlave "<< node<<" And I verified the Frame, deadValue: "<< deadlValue<< " and relativeDeadLine: "<< relativeDeadline << "\n";
+        if(queue.length()>0){
+            cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
+            EV << "confronto il frame passante:"<<deadlValue<<" , la testa vale:"<< queueHead->longValue() << "\n";
+            if(deadlValue==0 || deadlValue>queueHead->longValue() ){
+                // mi conservo il valore del timeStamp della frame
+                // in maniera tale da poterla riconoscere al suo ritorno.
+                cMsgPar *timeStamp=&msg->par("timeStamp");
+                long timeStampValue=timeStamp->longValue();
+                timeStart=timeStampValue;
+
+                // setto una flag in maniera tale da non scrivere niente nelle frame successive
+                underControl=true;
+
+                EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead->longValue() << "\n";
+                deadl->setLongValue(queueHead->longValue());
+            }
+        }
+    }
+    if(scenario==2){
+            cMsgPar *bitWise=&msg->par("bitWise");
+            std::string bitWiseValue=bitWise->stringValue();
+            //EV << "I'm EtherCatMACSlave "<< node<<" And I verified the Frame, deadValue: "<< deadlValue<< " and relativeDeadLine: "<< relativeDeadline << "\n";
+            if(queue.length()>0){
+                cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
+                std::string stringValue= queueHead->stringValue();
+                if( bitWiseValue >stringValue){
+                    // mi conservo il valore del timeStamp della frame
+                    // in maniera tale da poterla riconoscere al suo ritorno.
+                    cMsgPar *timeStamp=&msg->par("timeStamp");
+                    long timeStampValue=timeStamp->longValue();
+                    timeStart=timeStampValue;
+
+                    // setto una flag in maniera tale da non scrivere niente nelle frame successive
+                    underControl=true;
+
+                    EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead << "\n";
+                    bitWise->setStringValue(queueHead->stringValue());
+                }
+            }
+        }
+}
+
 void EtherCatMACSlave::queueGenerator(){
 
+    int random=uniform (1, 100);
+    if(random>=prob)
+        return;
+
+    if(scenario==1){
+        relativeDeadline=uniform (1.0, 100000000.0);
+        cMsgPar *relDeadl=new cMsgPar("relativeDeadline");
+        //EV <<"Simtime(): "<< simTime().raw()<<" relativeDeadline:"<<relativeDeadline<< " diff: "<<simTime().raw()-relativeDeadline;
+        relDeadl->setLongValue(simTime().raw()-relativeDeadline);
+        queue.insert(relDeadl->dup());
+        queueTemp.insert(relDeadl->dup());
+    }
+    if(scenario==2){
+        relativeDeadline=uniform (0,256);
+        char result[8]={'0','0','0','0','0','0','0','0'};
+        itoa (relativeDeadline,result,2);
+        cMsgPar *bitWise=new cMsgPar("bitWise");
+        bitWise->setStringValue(result);
+        queue.insert(bitWise->dup());
+        queueTemp.insert(bitWise->dup());
+    }
 }
+
+
+
+void EtherCatMACSlave::finish(){
+    if(stampFinish){
+        if(scenario==1){
+            EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
+            EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is ";
+            for(int i=0;i<queue.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                EV <<  par->longValue() << ", ";
+            }
+            EV <<"\nTemp:";
+            for(int i=0;i<queueTemp.length();i++){
+                        cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                        EV <<  par->longValue() << ", ";
+            }
+            EV <<"\n";
+            //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
+            EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+        }
+        if(scenario==2){
+            EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
+            EV << "I'm EtherCatMACSlave "<< node<<" and the time Arrived is ";
+            for(int i=0;i<queue.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                EV <<  par->stringValue() << ", ";
+            }
+            EV <<"\nTemp:";
+            for(int i=0;i<queueTemp.length();i++){
+                        cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                        EV <<  par->stringValue() << ", ";
+            }
+            EV <<"\n";
+            //EV << "I'm EtherCatMACSlave "<< node<<" and the difference time is "<< relativeDeadline-timeStart << "\n";
+            EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+        }
+    }
+}
+
 

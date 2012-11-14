@@ -15,11 +15,10 @@
 
 #include "EtherCatMACMaster.h"
 #include "EthernetFrame_m.h"
-#include "split8_m.h"
 
 Define_Module(EtherCatMACMaster);
 
-bool onlyEndPdu=true;
+
 
 EtherCatMACMaster::EtherCatMACMaster()
 {
@@ -41,13 +40,12 @@ EtherCatMACMaster::~EtherCatMACMaster()
 
 void EtherCatMACMaster::initialize()
 {
-        //delay fisso pari al parametro di configurazione
-        //delay=par("delay");
 
         //delay variabile con max pari al parametro di configurazione
         int delayMax=par("delay");
+        onlyEndPdu=par("onlyEndPdu");
         delay=uniform(0.000009,delayMax);//delayMax=0.000001;
-        ev << "delay:"<< delay;
+
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -61,7 +59,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
     if(msg->getArrivalGate()==gate("upperLayerIn")){
         EV << "I'm EtherCatMACMaster and receive payload from MasterApplication Layer"<< msg << "\n";
         EthernetFrame *ethf = new EthernetFrame("ethernet-frame"); // subclassed from cPacket
-
         EV << "Scheduling first send to t=5.0s\n";
 
 
@@ -171,6 +168,10 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                             cMsgPar *deadline=new cMsgPar("deadl");
                             deadline->setLongValue(0);
 
+                            cMsgPar *bitWise=new cMsgPar("bitWise");
+                            bitWise->setStringValue("11111111");
+                            // questa è la frame a più bassa priorità
+
 
                             c->addPar(length);
                             c->addPar(adp);
@@ -178,6 +179,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                             c->addPar(timeStamp);
                             c->addPar(nodeNumber);
                             c->addPar(deadline);
+                            c->addPar(bitWise);
 
                         }
 
@@ -206,7 +208,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
             int start=24;
             int byte=24;
                 for(int i=0;i<frame->getPduArraySize();i++){
-
                         if(frame->getPdu(i).LEN!=0)
                             dim++;
                 }
@@ -228,7 +229,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 adp->setLongValue(pdu.ADP);
 
                                 cMsgPar *global=new cMsgPar("global");
-                                global->setBoolValue(pdu.global);
+                                global->setBoolValue(true);
 
                                 cMsgPar *timeStamp=new cMsgPar("timeStamp");
                                 SimTime timer=simTime()+delay*byte;
@@ -240,8 +241,17 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 cMsgPar *deadline=new cMsgPar("deadline");
                                 deadline->setLongValue(0);
 
+
                                 cMsgPar *deadl=new cMsgPar("deadl");
                                 deadl->setLongValue(0);
+
+
+
+                                cMsgPar *bitWise=new cMsgPar("bitWise");
+                                bitWise->setStringValue("11111111");
+                                // questa è la frame a più bassa priorità
+
+
 
 
                                 c->addPar(length);
@@ -251,6 +261,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 c->addPar(nodeNumber);
                                 c->addPar(deadl);
                                 c->addPar(deadline);
+                                c->addPar(bitWise);
 
                             }
 
@@ -296,6 +307,8 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
 }
+
+
 void EtherCatMACMaster::finish(){
         ev << "Preamble:" << type1   << "\n";
         ev << "SFD:" <<      type2   << "\n";

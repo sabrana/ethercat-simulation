@@ -4,6 +4,7 @@ simple EtherCatMACMaster
 {
     parameters:
         double delay;
+        bool onlyEndPdu;
 	gates:
 		inout phys;
 		input upperLayerIn;
