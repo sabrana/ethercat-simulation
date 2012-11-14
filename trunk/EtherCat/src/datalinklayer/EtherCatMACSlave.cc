@@ -16,7 +16,7 @@
 #include "EtherCatMACSlave.h"
 #include "EthernetFrame_m.h"
 
-bool stampFinish=false;
+
 
 
 
@@ -95,7 +95,6 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
             if(globalValue){
                 globalPacket++;
                 queueGenerator();
-                stampFinish=true;
                 ev << "Global Message arrived:" << relativeDeadline << "\n";
                 setDeadlineOnFrame(msg);
                 cPacket *byte = (cPacket*)msg;
@@ -284,10 +283,10 @@ void EtherCatMACSlave::queueGenerator(){
 
 
 void EtherCatMACSlave::finish(){
-    if(stampFinish){
-        EV << "I'm EtherCatMACSlave "<< node<<" and the time Start is "<< timeStart << "\n";
-        EV << "I'm EtherCatMACSlave "<< node<<" and received " << globalPacket << " globalPacket"<< "\n";
-        EV << "I'm EtherCatMACSlave "<< node<<" and I win "<< nContestWin << " times \n";
+
+        EV << "### NODE: "<< node<<"\n";
+        EV << "I received " << globalPacket << " globalPacket"<< "\n";
+        EV << "I win "<< nContestWin << " time/s a contest \n";
         EV <<"FRAME GENERATE: "<<queueTemp.length()<< "\n";
         EV <<"FRAME SCHEDULATE: "<<queueTemp.length() - queue.length()<< "\n";
         EV <<"FRAME RIMASTE IN CODA: "<<queue.length()<< "\n";
@@ -318,7 +317,7 @@ void EtherCatMACSlave::finish(){
                    EV << ",";
                }
            }
-           EV <<"]\n";
+           EV <<"]\n\n";
 
         }
         if(scenario==2){
@@ -354,10 +353,9 @@ void EtherCatMACSlave::finish(){
                     EV << ",";
                 }
             }
-            EV <<"]\n";
-
+            EV <<"]\n\n";
         }
-    }
+
 }
 
 

@@ -29,6 +29,8 @@ class EtherCatMACMaster : public cSimpleModule
   private:
       simtime_t delay;
       bool onlyEndPdu;
+      int nFrameToSend;
+      int probabiltyGlobalFrame;
       int type1;
       int type2;
       int type3;
