@@ -31,6 +31,7 @@ class EtherCatMACMaster : public cSimpleModule
       bool onlyEndPdu;
       int nFrameToSend;
       int probabiltyGlobalFrame;
+      int typeOfDeadline;//relative=1,absolute=2
       int type1;
       int type2;
       int type3;
