@@ -7,6 +7,7 @@ simple EtherCatMACSlave
         double delay;
         int scenario=default(1);
         int probability=default(50);
+        int typeOfDeadline;//relative=1,absolute=2
     gates:
         inout phys1;
         inout phys2;

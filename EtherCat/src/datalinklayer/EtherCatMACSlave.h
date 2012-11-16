@@ -31,6 +31,7 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queueTemp;
     int globalPacket;
     int scenario;
+    int typeOfDeadline;//relative=1,absolute=2
     int prob;
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
                        // non riscrivere lo stesso valore nella frame successiva

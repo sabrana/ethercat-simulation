@@ -36,6 +36,7 @@ void EtherCatMACSlave::initialize()
     delay=par("delay");
     scenario=par("scenario");
     prob=par("probability");
+    typeOfDeadline=par("typeOfDeadline");
     nContestWin=0;
     relativeDeadline=1;
     globalPacket=0;
@@ -252,7 +253,13 @@ void EtherCatMACSlave::queueGenerator(){
         relativeDeadline=uniform (1.0, 100000000.0);
         cMsgPar *relDeadl=new cMsgPar("relativeDeadline");
         //EV <<"Simtime(): "<< simTime().raw()<<" relativeDeadline:"<<relativeDeadline<< " diff: "<<simTime().raw()-relativeDeadline;
-        relDeadl->setLongValue(simTime().raw()-relativeDeadline);
+        if(typeOfDeadline==2){
+            relDeadl->setLongValue(simTime().raw()-relativeDeadline);
+        }
+        if(typeOfDeadline==1){
+            relDeadl->setLongValue(relativeDeadline);
+        }
+
         queue.insert(relDeadl->dup());
         queueTemp.insert(relDeadl->dup());
     }

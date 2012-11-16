@@ -7,6 +7,7 @@ simple EtherCatMACMaster
         bool onlyEndPdu;
         int probabiltyGlobalFrame;
         int nFrameToSend;
+        int typeOfDeadline;//relative=1,absolute=2
 	gates:
 		inout phys;
 		input upperLayerIn;

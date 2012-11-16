@@ -46,6 +46,7 @@ void EtherCatMACMaster::initialize()
         int delayMax=par("delay");
         nFrameToSend=par("nFrameToSend");
         onlyEndPdu=par("onlyEndPdu");
+        typeOfDeadline=par("typeOfDeadline");
         probabiltyGlobalFrame=par("probabiltyGlobalFrame");
         delay=uniform(0.000009,delayMax);//delayMax=0.000001;
 
