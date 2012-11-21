@@ -34,9 +34,11 @@ Define_Module(EtherCatMACSlave);
 void EtherCatMACSlave::initialize()
 {
     delay=par("delay");
+    enable_arb_pen=par("enable_arb_pen");
     scenario=par("scenario");
     prob=par("probability");
     typeOfDeadline=par("typeOfDeadline");
+    swapper=par("swapper");
     nContestWin=0;
     relativeDeadline=1;
     globalPacket=0;
@@ -56,13 +58,13 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
                 EV << "I'm EtherCatMACSlave and finish chain"<<endl;
                 if(strcmp(msg->getName(),"END_PDU")==0){
-                    if(controlIfIwon(msg)){
-                        EV << "Ho vinto \n";
-                    }
+                    if(!enable_arb_pen)
+                        if(controlIfIwon(msg))
+                            EV << "Ho vinto \n";
                 }
                 send(msg->dup(),"phys1$o");
-            }
         }
+    }
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
        // EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?:"<<  \n";
@@ -93,11 +95,15 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
             EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?: "<<globalValue<<"\n";
 
+
             if(globalValue){
                 globalPacket++;
                 queueGenerator();
                 ev << "Global Message arrived:" << relativeDeadline << "\n";
-                setDeadlineOnFrame(msg);
+                if(underControl && enable_arb_pen)
+                    checkIfIWinOnArbPend(msg);
+                if(!underControl)
+                    setDeadlineOnFrame(msg);
                 cPacket *byte = (cPacket*)msg;
                 send(byte,"upperLayerOut");
             }
@@ -132,9 +138,10 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 //cMsgPar *deadl=&msg->par("deadl");
                 //long deadlineValue=deadl->longValue();
                 //EV << "Verifico se vinco relDed: "<< relativeDeadline << " dedVal: "<< deadlineValue << "\n";
-                if(controlIfIwon(msg)){
-                    EV << "Ho vinto \n";
-                }
+                if(!enable_arb_pen)
+                    if(controlIfIwon(msg))
+                        EV << "Ho vinto \n";
+
             }
             send(msg,"phys1$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to prev slave\n";
@@ -150,6 +157,9 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     if(!underControl){
         return false;
     }
+    if(swapper)
+        return false;
+
     cMsgPar *timeStamp=&msg->par("timeStamp");
     long timeStampValue=timeStamp->longValue();
     // verifico che sto confrontando lo stesso frame che ho settato in partenza
@@ -170,7 +180,7 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
             EV << "confronto Se ho vinto, la testa vale:"<< queueHead->longValue() << "\n";
             if(queueHeadValue==deadlineValue){
                 nContestWin++;
-                queue.pop();
+                queueSched.insert(queue.pop());
                 return true;
             }
         }
@@ -179,12 +189,12 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
         if(queue.length()>0){
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
             std::string stringValue= queueHead->stringValue();
-            cMsgPar *bitWise=&msg->par("bitWise");
+            cMsgPar *bitWise=&msg->par("cmd");
             std::string bitWiseValue=bitWise->stringValue();
-            EV << "confronto Se ho vinto, la testa vale:"<< queueHead << "\n";
+            EV << "confronto Se ho vinto, la testa vale:"<< stringValue << " e il valore "<<bitWiseValue  <<"\n";
             if(stringValue==bitWiseValue){
                 nContestWin++;
-                queue.pop();
+                queueSched.insert(queue.pop());
                 return true;
             }
         }
@@ -193,10 +203,8 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
 }
 
 void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
-    if(underControl)
-    {
-        return;
-    }
+
+
     if(scenario==1){
         cMsgPar *deadl=&msg->par("deadl");
         long deadlValue=deadl->longValue();
@@ -210,17 +218,23 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                 cMsgPar *timeStamp=&msg->par("timeStamp");
                 long timeStampValue=timeStamp->longValue();
                 timeStart=timeStampValue;
-
                 // setto una flag in maniera tale da non scrivere niente nelle frame successive
-                underControl=true;
-
+                if(swapper){
+                    queueSched.insert(queue.pop());
+                    if(deadlValue!=0){
+                        sortQueue(deadl);
+                    }// inserisco questo valore
+                }
+                else{
+                    underControl=true;
+                }
                 EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead->longValue() << "\n";
                 deadl->setLongValue(queueHead->longValue());
             }
         }
     }
     if(scenario==2){
-            cMsgPar *bitWise=&msg->par("bitWise");
+            cMsgPar *bitWise=&msg->par("cmd");
             std::string bitWiseValue=bitWise->stringValue();
             //EV << "I'm EtherCatMACSlave "<< node<<" And I verified the Frame, deadValue: "<< deadlValue<< " and relativeDeadLine: "<< relativeDeadline << "\n";
             if(queue.length()>0){
@@ -232,9 +246,17 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     cMsgPar *timeStamp=&msg->par("timeStamp");
                     long timeStampValue=timeStamp->longValue();
                     timeStart=timeStampValue;
-
                     // setto una flag in maniera tale da non scrivere niente nelle frame successive
-                    underControl=true;
+                    if(swapper){
+                       queueSched.insert(queue.pop());
+                       sortQueue(bitWise);
+                       // inserisco questo valore
+                       // a meno che non sia 11111111? posso usarlo per verificare se ho finito le
+                       // richieste aperiodiche.
+                   }
+                   else{
+                       underControl=true;
+                   }
 
                     EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead << "\n";
                     bitWise->setStringValue(queueHead->stringValue());
@@ -250,7 +272,7 @@ void EtherCatMACSlave::queueGenerator(){
         return;
 
     if(scenario==1){
-        relativeDeadline=uniform (1.0, 100000000.0);
+        relativeDeadline=uniform (1.0, 100.0);
         cMsgPar *relDeadl=new cMsgPar("relativeDeadline");
         //EV <<"Simtime(): "<< simTime().raw()<<" relativeDeadline:"<<relativeDeadline<< " diff: "<<simTime().raw()-relativeDeadline;
         if(typeOfDeadline==2){
@@ -259,8 +281,12 @@ void EtherCatMACSlave::queueGenerator(){
         if(typeOfDeadline==1){
             relDeadl->setLongValue(relativeDeadline);
         }
-
+        // SORTED
+        sortQueue(relDeadl);
+        /*FIFO
         queue.insert(relDeadl->dup());
+
+        */
         queueTemp.insert(relDeadl->dup());
     }
     if(scenario==2){
@@ -278,15 +304,140 @@ void EtherCatMACSlave::queueGenerator(){
         for(int j=7;j>=shift;j--){
             result[j]=temp[j-shift];
         }
-        //result[8]=' ';
         ev <<"result:"<< result << "\n";
-        cMsgPar *bitWise=new cMsgPar("bitWise");
+        cMsgPar *bitWise=new cMsgPar("cmd");
         bitWise->setStringValue(result);
+        // SORTED
+        sortQueue(bitWise);
+        /* FIFO
         queue.insert(bitWise->dup());
+        */
         queueTemp.insert(bitWise->dup());
+
     }
 }
 
+void EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
+    if(scenario==1){
+        long result=msgPar->longValue();
+                bool finded=false;
+                for(int i=0;i<queue.length();i++){
+                    cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                    long value= par->longValue();
+                    bool tester=value>result; // value maggiore di result
+                    if(value>result){
+                       ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
+                       //*temp=*par;
+                       queue.insertBefore(queue.get(i),msgPar->dup());
+                       finded=true;
+                       break;
+                    }
+
+                }
+               if(!finded){
+                  queue.insert(msgPar->dup());
+               }
+               /*
+                finded=false;
+                for(int i=0;i<queueTemp.length();i++){
+                   cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                   long value=  par->longValue(); // value è il valore del vettore
+                   bool tester=value>result; // value maggiore di result
+                   if(value>result){
+                      //*temp=*par;
+                       ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
+                      queueTemp.insertBefore(queueTemp.get(i),msgPar->dup());
+                      finded=true;
+                      break;
+                   }
+
+                }
+                if(!finded){
+                   queueTemp.insert(msgPar->dup());
+                }*/
+        }
+    if(scenario==2){
+    const char* result=msgPar->stringValue();
+            bool finded=false;
+            for(int i=0;i<queue.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                const char* value= par->stringValue();
+                bool tester=test(value,result); // value maggiore di result
+                if(tester){
+                   ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
+                   //*temp=*par;
+                   queue.insertBefore(queue.get(i),msgPar->dup());
+                   finded=true;
+                   break;
+                }
+
+            }
+           if(!finded){
+              queue.insert(msgPar->dup());
+           }
+           /*
+            finded=false;
+            for(int i=0;i<queueTemp.length();i++){
+               cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+               const char* value=  par->stringValue(); // value è il valore del vettore
+               bool tester=test(value,result); // value maggiore di result
+               if(tester){
+                  //*temp=*par;
+                   ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
+                  queueTemp.insertBefore(queueTemp.get(i),msgPar->dup());
+                  finded=true;
+                  break;
+               }
+
+            }
+            if(!finded){
+               queueTemp.insert(msgPar->dup());
+            }*/
+    }
+}
+
+
+void EtherCatMACSlave::checkIfIWinOnArbPend(cMessage *msg){
+        // controllo se ho vinto al token successivo con CAN interface
+
+            cMsgPar *timeStamp=&msg->par("timeStampPrevius");
+            long timeStampValue=timeStamp->longValue();
+
+            EV <<"--->checkIfIWinOnArbPend\n";
+            EV << "Confronto time1:"<<timeStampValue<<" e time2:"<<timeStart;
+
+            // verifico che sto confrontando lo stesso frame che ho settato in partenza
+            if(timeStampValue!=timeStart){
+                return;
+            }
+            cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
+            std::string stringValue= queueHead->stringValue();
+            cMsgPar *bitWise=&msg->par("cmdPrevius");
+            std::string bitWiseValue=bitWise->stringValue();
+            EV << "ARB-PEND->confronto Se ho vinto, la testa vale:"<< stringValue << " e il valore "<<bitWiseValue  <<"\n";
+            if(stringValue==bitWiseValue){
+                nContestWin++;
+                queueSched.insert(queue.pop());
+            }
+
+            EV << "ARB-PEND->Ho Vinto\n";
+            underControl=false;
+            return;
+}
+bool EtherCatMACSlave::test(const char* a,const char* b){
+    // metodo che serve a verificare che un numero binario sia maggiore di un altro
+    for(int i=0;i<8;i++){
+        if(a[i]>b[i]){
+            //ev << "a["<<i<<"]=" <<a[i] << ">b["<<i<<"]"<<b[i];
+            return true;
+        }
+        if(a[i]<b[i]){
+            //ev << "a["<<i<<"]=" <<a[i] << "<b["<<i<<"]"<<b[i];
+            return false;
+        }
+    }
+    return true;
+}
 
 
 void EtherCatMACSlave::finish(){
@@ -295,7 +446,7 @@ void EtherCatMACSlave::finish(){
         EV << "I received " << globalPacket << " globalPacket"<< "\n";
         EV << "I win "<< nContestWin << " time/s a contest \n";
         EV <<"FRAME GENERATE: "<<queueTemp.length()<< "\n";
-        EV <<"FRAME SCHEDULATE: "<<queueTemp.length() - queue.length()<< "\n";
+        EV <<"FRAME SCHEDULATE: "<<queueSched.length()<< "\n";
         EV <<"FRAME RIMASTE IN CODA: "<<queue.length()<< "\n";
         if(scenario==1){
             EV <<"LISTA FRAME GENERATE:[";
@@ -308,10 +459,10 @@ void EtherCatMACSlave::finish(){
             }
             EV <<"]\n";
             EV <<"LISTA FRAME LISTA FRAME SCHEDULATE:[";
-                for(int i=0;i<queueTemp.length()-queue.length();i++){
-                   cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+                for(int i=0;i<queueSched.length();i++){
+                   cMsgPar *par= check_and_cast<cMsgPar*>(queueSched.get(i));
                    EV <<  par->longValue();
-                   if(i+1<queueTemp.length()-queue.length()){
+                   if(i+1<queueSched.length()){
                        EV << ",";
                    }
              }
@@ -340,12 +491,12 @@ void EtherCatMACSlave::finish(){
             }
             EV <<"]\n";
             EV <<"LISTA FRAME SCHEDULATE:[";
-            for(int i=0;i<queueTemp.length()-queue.length();i++){
-                cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
+            for(int i=0;i<queueSched.length();i++){
+                cMsgPar *par= check_and_cast<cMsgPar*>(queueSched.get(i));
                 for(int k=0;k<8;k++){
                     EV <<  par->stringValue()[k];
                 }
-                if(i+1<queueTemp.length() - queue.length()){
+                if(i+1<queueSched.length()){
                     EV << ",";
                 }
             }

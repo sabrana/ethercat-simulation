@@ -29,7 +29,10 @@ class EtherCatMACSlave : public cSimpleModule
     simtime_t delay;
     cQueue queue;
     cQueue queueTemp;
+    cQueue queueSched;
     int globalPacket;
+    bool enable_arb_pen;
+    bool swapper;
     int scenario;
     int typeOfDeadline;//relative=1,absolute=2
     int prob;
@@ -48,9 +51,12 @@ class EtherCatMACSlave : public cSimpleModule
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
-    virtual void setDeadlineOnFrame(cMessage *msg);
-    virtual void queueGenerator();
-    virtual bool controlIfIwon(cMessage *msg);
+    void setDeadlineOnFrame(cMessage *msg);
+    void queueGenerator();
+    bool controlIfIwon(cMessage *msg);
+    bool test(const char* a ,const char* b);
+    void sortQueue(cMsgPar *bitWise);
+    void checkIfIWinOnArbPend(cMessage *msg);
 };
 
 #endif
