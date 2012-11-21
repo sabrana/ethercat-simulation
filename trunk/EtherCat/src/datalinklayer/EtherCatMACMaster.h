@@ -29,8 +29,14 @@ class EtherCatMACMaster : public cSimpleModule
   private:
       simtime_t delay;
       bool onlyEndPdu;
+      cQueue queue;
+
+      cQueue queueTimeStamp;
+      cQueue queueValueWin;
+
       int nFrameToSend;
       int probabiltyGlobalFrame;
+      bool enable_arb_pen;
       int typeOfDeadline;//relative=1,absolute=2
       int type1;
       int type2;
@@ -41,6 +47,10 @@ class EtherCatMACMaster : public cSimpleModule
       int type7;
       int byteReturn;
       int valueData;
+      int scenario;
+      const char* previusValue;
+      long previusTimestamp;
+
   public:
 
     EtherCatMACMaster();

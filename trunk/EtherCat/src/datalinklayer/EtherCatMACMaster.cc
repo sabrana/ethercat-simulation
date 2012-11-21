@@ -41,14 +41,16 @@ EtherCatMACMaster::~EtherCatMACMaster()
 
 void EtherCatMACMaster::initialize()
 {
-
         //delay variabile con max pari al parametro di configurazione
         int delayMax=par("delay");
         nFrameToSend=par("nFrameToSend");
         onlyEndPdu=par("onlyEndPdu");
         typeOfDeadline=par("typeOfDeadline");
+        enable_arb_pen=par("enable_arb_pen");
+        scenario=par("scenario");
         probabiltyGlobalFrame=par("probabiltyGlobalFrame");
         delay=uniform(0.000009,delayMax);//delayMax=0.000001;
+        previusTimestamp=0;
 
 }
 
@@ -57,6 +59,28 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
     if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
+        if(enable_arb_pen && queueValueWin.length()>0){
+
+             cMsgPar *queueHeadValue= check_and_cast<cMsgPar*>(queueValueWin.get(0)->dup());
+             cMsgPar *queueHeadTimeStamp= check_and_cast<cMsgPar*>(queueTimeStamp.get(0)->dup());
+             queueValueWin.pop();
+             queueTimeStamp.pop();
+             cMsgPar *cmdPrevius=new cMsgPar("cmdPrevius");
+             cmdPrevius->setStringValue(queueHeadValue->stringValue());
+             cMsgPar *timeStampPrevius=new cMsgPar("timeStampPrevius");
+             timeStampPrevius->setLongValue(queueHeadTimeStamp->longValue());
+             msg->addPar(cmdPrevius);
+             msg->addPar(timeStampPrevius);
+       }
+        else{
+             cMsgPar *cmdPrevius=new cMsgPar("cmdPrevius");
+             cmdPrevius->setStringValue("");
+             cMsgPar *timeStampPrevius=new cMsgPar("timeStampPrevius");
+             timeStampPrevius->setLongValue(0);
+             msg->addPar(cmdPrevius);
+             msg->addPar(timeStampPrevius);
+        }
+
         send(msg->dup(),"phys$o");
     }
 
@@ -181,10 +205,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 cMsgPar *deadline=new cMsgPar("deadl");
                                 deadline->setLongValue(0);
 
-                                cMsgPar *bitWise=new cMsgPar("bitWise");
+                                cMsgPar *bitWise=new cMsgPar("cmd");
                                 bitWise->setStringValue("11111111");
                                 // questa è la frame a più bassa priorità
-
 
                                 c->addPar(length);
                                 c->addPar(adp);
@@ -261,9 +284,10 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
 
-                                cMsgPar *bitWise=new cMsgPar("bitWise");
+                                cMsgPar *bitWise=new cMsgPar("cmd");
                                 bitWise->setStringValue("11111111");
                                 // questa è la frame a più bassa priorità
+                                //definita con il parametro cmd
 
                                 c->addPar(length);
                                 c->addPar(adp);
@@ -314,9 +338,31 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
        }
        byteReturn++;
 
+       if(strcmp(msg->getName(),"END_PDU")==0){
+           cMsgPar *global=&msg->par("global");
+           bool globalValue=global->boolValue();
+           if(globalValue){
+               if(scenario==1){
+               cMsgPar *deadl=&msg->par("deadl");
+               queue.insert(deadl->dup());
+               }
+               if(scenario==2){
+                   cMsgPar *deadl=&msg->par("cmd");
+                   queue.insert(deadl->dup());
+               }
+           }
+       }
+
+       if(enable_arb_pen){
+           cMsgPar *bitWise=&msg->par("cmd");
+           //previusValue=bitWise->stringValue();
+           queueValueWin.insert(bitWise->dup());
+           //previusValue=bitWiseValue;
+           cMsgPar *timeStamp=&msg->par("timeStamp");
+           //previusTimestamp=timeStamp->longValue();
+           queueTimeStamp.insert(timeStamp->dup());
+       }
    }
-
-
 }
 
 
@@ -330,6 +376,28 @@ void EtherCatMACMaster::finish(){
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
+        EV <<"##MASTER\nLISTA FRAME LISTA FRAME SCHEDULATE:[";
+        if(scenario==1){
+                for(int i=0;i<queue.length();i++){
+                   cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                   EV <<  par->longValue();
+                   if(i+1<queue.length()){
+                       EV << ",";
+                   }
+             }
+        }
+        if(scenario==2){
+                for(int i=0;i<queue.length();i++){
+                    cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+                    for(int k=0;k<8;k++){
+                        EV <<  par->stringValue()[k];
+                    }
+                    if(i+1<queue.length()){
+                        EV << ",";
+                    }
+            }
+        }
+        EV <<"]\n\n";
     }
 
 
