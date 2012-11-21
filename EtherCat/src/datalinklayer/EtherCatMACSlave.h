@@ -43,6 +43,8 @@ class EtherCatMACSlave : public cSimpleModule
     int timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
     int nContestWin;
+
+    char priority[8];// for like-can configuration
   public:
     EtherCatMACSlave();
     virtual ~EtherCatMACSlave();
