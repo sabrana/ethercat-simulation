@@ -31,7 +31,11 @@ EtherCatMACMaster::EtherCatMACMaster()
     type5=0;
     type6=0;
     type7=0;
+    type8=0;
+    type9=0;
+
 }
+
 
 EtherCatMACMaster::~EtherCatMACMaster()
 {
@@ -46,7 +50,7 @@ void EtherCatMACMaster::initialize()
         nFrameToSend=par("nFrameToSend");
         onlyEndPdu=par("onlyEndPdu");
         typeOfDeadline=par("typeOfDeadline");
-        enable_arb_pen=par("enable_arb_pen");
+        //enable_arb_pen=par("enable_arb_pen");
         scenario=par("scenario");
         probabiltyGlobalFrame=par("probabiltyGlobalFrame");
         delay=uniform(0.000009,delayMax);//delayMax=0.000001;
@@ -59,6 +63,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
     if (msg->isSelfMessage()){
         EV << "I'm EtherCatMACMaster and receive event msg" << endl;
+       /*
         if(enable_arb_pen && queueValueWin.length()>0){
 
              cMsgPar *queueHeadValue= check_and_cast<cMsgPar*>(queueValueWin.get(0)->dup());
@@ -80,6 +85,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
              msg->addPar(cmdPrevius);
              msg->addPar(timeStampPrevius);
         }
+        */
 
         send(msg->dup(),"phys$o");
     }
@@ -275,12 +281,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
                                 nodeNumber->setLongValue(0);
 
-                                cMsgPar *deadline=new cMsgPar("deadline");
+
+                                cMsgPar *deadline=new cMsgPar("deadl");
                                 deadline->setLongValue(0);
-
-
-                                cMsgPar *deadl=new cMsgPar("deadl");
-                                deadl->setLongValue(0);
 
 
 
@@ -294,7 +297,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 c->addPar(global);
                                 c->addPar(timeStamp);
                                 c->addPar(nodeNumber);
-                                c->addPar(deadl);
                                 c->addPar(deadline);
                                 c->addPar(bitWise);
 
@@ -314,6 +316,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
    }else if(msg->getArrivalGate()==gate("phys$i")){
+
 
        if(strcmp(msg->getName(),"Preamble")==0){
                   type1++;
@@ -336,12 +339,14 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
        if(strcmp(msg->getName(),"FCS")==0){
                   type7++;
        }
-       byteReturn++;
+
 
        if(strcmp(msg->getName(),"END_PDU")==0){
+           type8++;
            cMsgPar *global=&msg->par("global");
            bool globalValue=global->boolValue();
            if(globalValue){
+               type9++;
                if(scenario==1){
                cMsgPar *deadl=&msg->par("deadl");
                queue.insert(deadl->dup());
@@ -350,17 +355,18 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    cMsgPar *deadl=&msg->par("cmd");
                    queue.insert(deadl->dup());
                }
+               /*
+               if(enable_arb_pen){
+                   cMsgPar *bitWise=&msg->par("cmd");
+                   //previusValue=bitWise->stringValue();
+                   queueValueWin.insert(bitWise->dup());
+                   //previusValue=bitWiseValue;
+                   cMsgPar *timeStamp=&msg->par("timeStamp");
+                   //previusTimestamp=timeStamp->longValue();
+                   queueTimeStamp.insert(timeStamp->dup());
+               }
+               */
            }
-       }
-
-       if(enable_arb_pen){
-           cMsgPar *bitWise=&msg->par("cmd");
-           //previusValue=bitWise->stringValue();
-           queueValueWin.insert(bitWise->dup());
-           //previusValue=bitWiseValue;
-           cMsgPar *timeStamp=&msg->par("timeStamp");
-           //previusTimestamp=timeStamp->longValue();
-           queueTimeStamp.insert(timeStamp->dup());
        }
    }
 }
@@ -371,8 +377,10 @@ void EtherCatMACMaster::finish(){
         ev << "SFD:" <<      type2   << "\n";
         ev << "DA:" <<       type3   << "\n";
         ev << "SA:" <<       type4   << "\n";
-        ev << "EtherType:"<< type5   << "\n";
-        ev << "PayLoad:" <<  type6   << "\n";
+        ev << "EtherType:"  << type5   << "\n";
+        ev << "PayLoad:"    <<  type6   << "\n";
+        ev << "END_PDU:"    << type8   << "\n";
+        ev << "END_PDU_Global:"    << type9   << "\n";
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
@@ -395,9 +403,32 @@ void EtherCatMACMaster::finish(){
                     if(i+1<queue.length()){
                         EV << ",";
                     }
-            }
+                }
+                /*
+                EV <<"]\n";
+                EV <<"TIMESTAMP FRAME SCHEDULATE:[";
+                for(int i=0;i<queueTimeStamp.length();i++){
+                    cMsgPar *par= check_and_cast<cMsgPar*>(queueTimeStamp.get(i));
+                    EV <<  par->longValue();
+                    if(i+1<queueTimeStamp.length()){
+                        EV << ",";
+                    }
+                }
+                EV <<"]\n";
+                    EV <<"QUEUE WIN :[";
+                    for(int i=0;i<queueValueWin.length();i++){
+                        cMsgPar *par= check_and_cast<cMsgPar*>(queueValueWin.get(i));
+                        for(int k=0;k<8;k++){
+                            EV <<  par->stringValue()[k];
+                        }
+                        if(i+1<queueValueWin.length()){
+                            EV << ",";
+                        }
+                }
+                */
+
         }
-        EV <<"]\n\n";
+        EV <<"]";
     }
 
 

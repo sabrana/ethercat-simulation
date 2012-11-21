@@ -9,7 +9,7 @@ simple EtherCatMACSlave
         int probability=default(50);
         int typeOfDeadline;//relative=1,absolute=2
         bool swapper=default(false);
-        bool enable_arb_pen;
+        //bool enable_arb_pen;
     gates:
         inout phys1;
         inout phys2;

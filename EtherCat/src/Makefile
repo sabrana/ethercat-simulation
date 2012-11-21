@@ -14,7 +14,7 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(CMDENV_LIBS)
 #USERIF_LIBS = $(TKENV_LIBS)
 
 # C++ include paths (with -I)
-INCLUDE_PATH = -I. -Iapplicationlayer -Idatalinklayer -Iphysicallayer
+INCLUDE_PATH = -I. -Iapplicationlayer -Idatalinklayer -Iphysicallayer -Iresults
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -112,12 +112,13 @@ clean:
 	-rm -f applicationlayer/*_m.cc applicationlayer/*_m.h
 	-rm -f datalinklayer/*_m.cc datalinklayer/*_m.h
 	-rm -f physicallayer/*_m.cc physicallayer/*_m.h
+	-rm -f results/*_m.cc results/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applicationlayer/*.cc datalinklayer/*.cc physicallayer/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applicationlayer/*.cc datalinklayer/*.cc physicallayer/*.cc results/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/applicationlayer/EtherCatFrame_m.o: applicationlayer/EtherCatFrame_m.cc \
