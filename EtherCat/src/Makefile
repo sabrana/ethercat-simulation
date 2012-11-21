@@ -28,10 +28,18 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
-OBJS = $O/applicationlayer/MasterApplication.o $O/applicationlayer/SlaveApplication.o $O/datalinklayer/EtherCatMACMaster.o $O/datalinklayer/EtherCatMACSlave.o
+OBJS = \
+    $O/applicationlayer/MasterApplication.o \
+    $O/applicationlayer/SlaveApplication.o \
+    $O/datalinklayer/EtherCatMACMaster.o \
+    $O/datalinklayer/EtherCatMACSlave.o \
+    $O/applicationlayer/EtherCatFrame_m.o \
+    $O/datalinklayer/EthernetFrame_m.o
 
 # Message files
-MSGFILES =
+MSGFILES = \
+    applicationlayer/EtherCatFrame.msg \
+    datalinklayer/EthernetFrame.msg
 
 #------------------------------------------------------------------------------
 
@@ -112,12 +120,20 @@ depend:
 	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applicationlayer/*.cc datalinklayer/*.cc physicallayer/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+$O/applicationlayer/EtherCatFrame_m.o: applicationlayer/EtherCatFrame_m.cc \
+	applicationlayer/EtherCatFrame_m.h
 $O/applicationlayer/MasterApplication.o: applicationlayer/MasterApplication.cc \
+	applicationlayer/EtherCatFrame_m.h \
 	applicationlayer/MasterApplication.h
 $O/applicationlayer/SlaveApplication.o: applicationlayer/SlaveApplication.cc \
+	applicationlayer/EtherCatFrame_m.h \
 	applicationlayer/SlaveApplication.h
 $O/datalinklayer/EtherCatMACMaster.o: datalinklayer/EtherCatMACMaster.cc \
-	datalinklayer/EtherCatMACMaster.h
+	datalinklayer/EtherCatMACMaster.h \
+	datalinklayer/EthernetFrame_m.h
 $O/datalinklayer/EtherCatMACSlave.o: datalinklayer/EtherCatMACSlave.cc \
-	datalinklayer/EtherCatMACSlave.h
+	datalinklayer/EtherCatMACSlave.h \
+	datalinklayer/EthernetFrame_m.h
+$O/datalinklayer/EthernetFrame_m.o: datalinklayer/EthernetFrame_m.cc \
+	datalinklayer/EthernetFrame_m.h
 
