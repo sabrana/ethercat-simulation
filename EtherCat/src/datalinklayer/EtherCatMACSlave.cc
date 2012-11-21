@@ -277,7 +277,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 
 void EtherCatMACSlave::queueGenerator(){
 
-    int random=uniform (0, 100);
+    double random=uniform (0.0, 100.0,0.1);
     if(random>=prob)
         return;
 
