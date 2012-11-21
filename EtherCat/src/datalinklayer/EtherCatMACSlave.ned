@@ -6,7 +6,7 @@ simple EtherCatMACSlave
     parameters:
         double delay;
         int scenario=default(1);
-        int probability=default(50);
+        double probability=default(50);
         int typeOfDeadline;//relative=1,absolute=2
         bool swapper=default(false);
         //bool enable_arb_pen;
