@@ -43,6 +43,15 @@ void EtherCatMACSlave::initialize()
     relativeDeadline=1;
     globalPacket=0;
     underControl=false;
+
+    for(int i=0;i<8;i++){
+        int random=uniform (0,100);
+        if(random>50)
+            priority[i]='1';
+        else
+            priority[i]='0';
+    }
+        EV <<"Priority:"<< priority;
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
@@ -285,11 +294,11 @@ void EtherCatMACSlave::queueGenerator(){
         sortQueue(relDeadl);
         /*FIFO
         queue.insert(relDeadl->dup());
-
         */
         queueTemp.insert(relDeadl->dup());
     }
     if(scenario==2){
+        /*
         relativeDeadline=uniform (0,256);
         char result[8]={'0','0','0','0','0','0','0','0'};
         char temp[8];
@@ -305,13 +314,13 @@ void EtherCatMACSlave::queueGenerator(){
             result[j]=temp[j-shift];
         }
         ev <<"result:"<< result << "\n";
-        cMsgPar *bitWise=new cMsgPar("cmd");
-        bitWise->setStringValue(result);
-        // SORTED
-        sortQueue(bitWise);
-        /* FIFO
-        queue.insert(bitWise->dup());
         */
+        cMsgPar *bitWise=new cMsgPar("cmd");
+        bitWise->setStringValue(priority);
+        // SORTED
+        //sortQueue(bitWise);
+        // FIFO
+        queue.insert(bitWise->dup());
         queueTemp.insert(bitWise->dup());
 
     }
