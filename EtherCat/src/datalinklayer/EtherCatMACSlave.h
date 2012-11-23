@@ -42,9 +42,9 @@ class EtherCatMACSlave : public cSimpleModule
     double prob;
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
                        // non riscrivere lo stesso valore nella frame successiva
-    long relativeDeadline;
+    double absoluteDeadline;
     int node;
-    simtime_t timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
+    double timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
     int nContestWin;
     char priority[8];// for like-can configuration
