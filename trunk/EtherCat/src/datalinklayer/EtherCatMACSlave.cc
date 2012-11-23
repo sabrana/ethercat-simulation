@@ -268,8 +268,9 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     contestTimeStamp.insert(timeStamp->dup());
                     */
                     cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
-                    timeStart=timeStamp->timestamp;//timeStampValue;
                     EV << "PRIMA DI CRASHARE SCRIVI QUESTO2" << timeStamp->timestamp;
+                    timeStart=timeStamp->timestamp;//timeStampValue;
+
 
                     //contestTimeStamp.insert(timeStamp->dup());
 
