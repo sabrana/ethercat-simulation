@@ -170,7 +170,7 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     // verifico che sto confrontando lo stesso frame che ho settato in partenza
 
     cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
-    if(timeStamp->t!=timeStart){
+    if(timeStamp->timestamp!=timeStart){
         return false;
     }
 
@@ -229,7 +229,10 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                 timeStart=timeStampValue;*/
 
                 cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
-                timeStart=timeStamp->timestamp;//timeStampValue;
+
+                EV << "PRIMA DI CRASHARE SCRIVI QUESTO" << timeStamp->timestamp;
+                timeStart= timeStamp->timestamp;//timeStampValue;
+
                 // setto una flag in maniera tale da non scrivere niente nelle frame successive
 
                 if(swapper){
@@ -266,7 +269,9 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     */
                     cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
                     timeStart=timeStamp->timestamp;//timeStampValue;
-                    contestTimeStamp.insert(timeStamp->dup());
+                    EV << "PRIMA DI CRASHARE SCRIVI QUESTO2" << timeStamp->timestamp;
+
+                    //contestTimeStamp.insert(timeStamp->dup());
 
 
                     // setto una flag in maniera tale da non scrivere niente nelle frame successive
