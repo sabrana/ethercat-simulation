@@ -50,12 +50,13 @@ void EtherCatMACMaster::initialize()
         nFrameToSend=par("nFrameToSend");
         onlyEndPdu=par("onlyEndPdu");
         typeOfDeadline=par("typeOfDeadline");
+        delayFrameToFrame=par("delayFrameToFrame");
         //enable_arb_pen=par("enable_arb_pen");
         scenario=par("scenario");
         probabiltyGlobalFrame=par("probabiltyGlobalFrame");
         delay=uniform(0.000009,delayMax);//delayMax=0.000001;
         previusTimestamp=0;
-
+        setCameBack=true;
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -101,16 +102,24 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
         int byte=1;
         int byteRotation;
         int frameSended=0;
+        bool flag=true;
         while(frameSended!=nFrameToSend){
             byteRotation=byte-1;
-            frameSended++;
+
                 //preamble ethernet frame
-                for(byte; byte<=7+byteRotation; byte++){
+                flag=true;
+                 for(byte; byte<=7+byteRotation; byte++){
                     //preamble ethernet frame
                     ev << "Adding " << byte +byteRotation <<" /7 packet of preamble ethernet frame"<< endl;
                     cPacket *c=new cPacket("Preamble");
                     c->setByteLength(1);
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    simtime_t t=simTime()+delay*byte+frameSended*delayFrameToFrame;
+                    if(flag){
+                        cTimestampedValue *startFrame=new cTimestampedValue(t,1.0);
+                        queueTimeStamp.insert(startFrame);
+                        flag=false;
+                    }
+                    scheduleAt(t , c->dup());
                 }
 
                 //SFD ethernet frame
@@ -118,7 +127,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                     ev << "Adding " << byte-7 +byteRotation <<"/1 packet of SFD ethernet frame"<< endl;
                     cPacket *c=new cPacket("SFD");
                     c->setByteLength(1);
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                 }
 
                 //Destination MAC Address ethernet frame
@@ -127,7 +136,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                     ev << "Adding " << byte-8 +byteRotation<<" /6 packet of DA ethernet frame"<< endl;
                     cPacket *c=new cPacket("DA");
                     c->setByteLength(1);
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                 }
 
                 //Source MAC Address ethernet frame
@@ -136,7 +145,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                     ev << "Adding " << byte-14 +byteRotation <<" /6 packet of SA ethernet frame"<< endl;
                     cPacket *c=new cPacket("SA");
                     c->setByteLength(1);
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                 }
 
                 //EtherType ethernet frame
@@ -144,7 +153,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                     ev << "Adding " << byte-16 +byteRotation<<" /2 packet of EtherType ethernet frame"<< endl;
                     cPacket *c=new cPacket("EtherType");
                     c->setByteLength(1);
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                 }
 
                 //PayLoad ethernet frame
@@ -162,7 +171,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                             length->setLongValue(length_payload);
                             c->addPar(length);
                         }
-                    scheduleAt(simTime()+delay*byte, c->dup());
+                    scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                 }
 
                 // n PDU12
@@ -201,9 +210,13 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                     else{
                                        global->setBoolValue(false);
                                     }
+
                                 cMsgPar *timeStamp=new cMsgPar("timeStamp");
-                                SimTime timer=simTime()+delay*byte;
+                                SimTime timer=simTime()+delay*byte+frameSended*delayFrameToFrame;
                                 timeStamp->setLongValue(timer.raw());
+                                //cTimestampedValue *timeStamp=new cTimestampedValue(simTime(),1.0);
+                                //c->addObject(timeStamp->dup());
+
 
                                 cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
                                 nodeNumber->setLongValue(0);
@@ -223,9 +236,10 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 c->addPar(deadline);
                                 c->addPar(bitWise);
 
+
                             }
 
-                        scheduleAt(simTime()+delay*byte, c->dup());
+                        scheduleAt(simTime()+delay*byte+frameSended*delayFrameToFrame, c->dup());
                     }
                     start=start+=pdu.LEN;
                 }
@@ -239,6 +253,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                     c->setByteLength(1);
                     scheduleAt(simTime()+delay*byte, c->dup());
                 }
+                frameSended++;
             }
         }
 
@@ -277,6 +292,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 cMsgPar *timeStamp=new cMsgPar("timeStamp");
                                 SimTime timer=simTime()+delay*byte;
                                 timeStamp->setLongValue(timer.raw());
+                                //cTimestampedValue *timeStamp=new cTimestampedValue(simTime(),1.0);
+                                //c->addObject(timeStamp);
+
 
                                 cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
                                 nodeNumber->setLongValue(0);
@@ -284,8 +302,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
                                 cMsgPar *deadline=new cMsgPar("deadl");
                                 deadline->setLongValue(0);
-
-
 
                                 cMsgPar *bitWise=new cMsgPar("cmd");
                                 bitWise->setStringValue("11111111");
@@ -319,10 +335,17 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
        if(strcmp(msg->getName(),"Preamble")==0){
-                  type1++;
+           type1++;
+           if(setCameBack){
+               cTimestampedValue *cameBackFrame=new cTimestampedValue(simTime(),1.0);
+               queueTimeStampCameBack.insert(cameBackFrame);
+               setCameBack=false;
+           }
+
        }
        if(strcmp(msg->getName(),"SFD")==0){
                   type2++;
+                  setCameBack=true;
        }
        if(strcmp(msg->getName(),"DA")==0){
                   type3++;
@@ -373,6 +396,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
 void EtherCatMACMaster::finish(){
+
+
+
         ev << "Preamble:" << type1   << "\n";
         ev << "SFD:" <<      type2   << "\n";
         ev << "DA:" <<       type3   << "\n";
@@ -384,7 +410,57 @@ void EtherCatMACMaster::finish(){
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
-        EV <<"##MASTER\nLISTA FRAME LISTA FRAME SCHEDULATE:[";
+        EV <<"TIMESTAMP START FRAME["<<queueTimeStamp.length()<<"]:[";
+        for(int i=0;i<queueTimeStamp.length();i++){
+            cTimestampedValue *par= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+            EV <<  par->timestamp;
+            if(i+1<queueTimeStamp.length()){
+                EV << ",";
+            }
+        }
+        EV <<"]\n";
+        EV <<"DIFFERENCE BETWEEN FRAME START & FRAME-NEXT START:[";
+        for(int i=1;i<queueTimeStamp.length();i++){
+            cTimestampedValue *par0= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i-1));
+            cTimestampedValue *par1= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+            EV <<  par1->timestamp-par0->timestamp;
+            if(i+1<queueTimeStamp.length()){
+                EV << ",";
+            }
+        }
+        EV <<"]\n";
+        EV <<"TIMESTAMP FRAME CAME BACK["<<queueTimeStampCameBack.length()<<"]:[";
+        for(int i=0;i<queueTimeStampCameBack.length();i++){
+            cTimestampedValue *par= check_and_cast<cTimestampedValue*>(queueTimeStampCameBack.get(i));
+            EV <<  par->timestamp;
+            if(i+1<queueTimeStampCameBack.length()){
+                EV << ",";
+            }
+        }
+        EV <<"]\n";
+        EV <<"#Cycle time\n";
+        EV <<"DIFFERENCE BETWEEN FRAME START & FRAME END:[";
+        for(int i=0;i<queueTimeStamp.length();i++){
+                cTimestampedValue *par0= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+                cTimestampedValue *par1= check_and_cast<cTimestampedValue*>(queueTimeStampCameBack.get(i));
+                EV <<  par1->timestamp-par0->timestamp;
+                if(i+1<queueTimeStamp.length()){
+                    EV << ",";
+                }
+        }
+        EV <<"]\n";
+        EV <<"#Interarrival time\n";
+        EV <<"DIFFERENCE BETWEEN FRAME START END & FRAME-NEXT START:[";
+                for(int i=1;i<queueTimeStampCameBack.length();i++){
+                        cTimestampedValue *par0= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+                        cTimestampedValue *par1= check_and_cast<cTimestampedValue*>(queueTimeStampCameBack.get(i-1));
+                        EV <<  par0->timestamp-par1->timestamp;
+                        if(i+1<queueTimeStampCameBack.length()){
+                            EV << ",";
+                        }
+                }
+        EV <<"]";
+        EV <<"\n##MASTER\nLISTA FRAME LISTA FRAME SCHEDULATE:[";
         if(scenario==1){
                 for(int i=0;i<queue.length();i++){
                    cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
@@ -404,16 +480,10 @@ void EtherCatMACMaster::finish(){
                         EV << ",";
                     }
                 }
-                /*
+
                 EV <<"]\n";
-                EV <<"TIMESTAMP FRAME SCHEDULATE:[";
-                for(int i=0;i<queueTimeStamp.length();i++){
-                    cMsgPar *par= check_and_cast<cMsgPar*>(queueTimeStamp.get(i));
-                    EV <<  par->longValue();
-                    if(i+1<queueTimeStamp.length()){
-                        EV << ",";
-                    }
-                }
+
+                /*
                 EV <<"]\n";
                     EV <<"QUEUE WIN :[";
                     for(int i=0;i<queueValueWin.length();i++){

@@ -28,13 +28,14 @@ class EtherCatMACMaster : public cSimpleModule
 {
   private:
       simtime_t delay;
+      simtime_t delayFrameToFrame;// ritardo tra una frame ethernet ed un altra
       bool onlyEndPdu;
       cQueue queue;
-
       cQueue queueTimeStamp;
-      cQueue queueValueWin;
-
+      cQueue queueTimeStampCameBack;
       int nFrameToSend;
+      bool setCameBack;
+
       int probabiltyGlobalFrame;
       bool enable_arb_pen;
       int typeOfDeadline;//relative=1,absolute=2
