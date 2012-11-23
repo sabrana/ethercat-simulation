@@ -69,7 +69,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
        // EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?:"<<  \n";
-        EV << "GET NAME:" << msg->getName() << "\n";
+        EV << "I'm EtherCatMACSlave and receive single 1byte cPacket:" << msg->getName() << " at time "<< simTime()<<"\n";
         queueGenerator();
         if(strcmp(msg->getName(),"END_PDU")==0){
             //identifico il nodo

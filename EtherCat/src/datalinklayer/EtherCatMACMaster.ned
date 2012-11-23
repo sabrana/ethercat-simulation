@@ -6,7 +6,7 @@ simple EtherCatMACMaster
         double delay;
         double delayFrameToFrame;
         bool onlyEndPdu;
-        int probabiltyGlobalFrame;
+        int nGlobalFrame;
         //bool enable_arb_pen;
         int scenario=default(1);
         int nFrameToSend;
