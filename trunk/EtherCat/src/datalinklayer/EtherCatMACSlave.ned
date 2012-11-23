@@ -4,6 +4,7 @@ package ethercat.datalinklayer;
 simple EtherCatMACSlave 
 {
     parameters:
+        
         double delay;
         int scenario=default(1);
         double probability=default(50);

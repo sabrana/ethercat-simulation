@@ -35,8 +35,9 @@ class EtherCatMACMaster : public cSimpleModule
       cQueue queueTimeStampCameBack;
       int nFrameToSend;
       bool setCameBack;
+      bool setStart;
 
-      int probabiltyGlobalFrame;
+      int nGlobalFrame;
       bool enable_arb_pen;
       int typeOfDeadline;//relative=1,absolute=2
       int type1;
