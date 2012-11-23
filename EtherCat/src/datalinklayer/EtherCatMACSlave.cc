@@ -160,13 +160,21 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     }
     if(swapper)
         return false;
-
+    /*
     cMsgPar *timeStamp=&msg->par("timeStamp");
     long timeStampValue=timeStamp->longValue();
+    if(timeStampValue==timeStart){
+            return false;
+    }
+    */
     // verifico che sto confrontando lo stesso frame che ho settato in partenza
-    if(timeStampValue!=timeStart){
+
+    cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
+    if(timeStamp->t!=timeStart){
         return false;
     }
+
+
 
     // se siamo arrivati qui significa che stiamo controllando la frame giusta
     // sia che vinco sia che perdo, posso ripartecipare alle contese
@@ -216,10 +224,14 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
             if(deadlValue==0 || deadlValue>queueHead->longValue() ){
                 // mi conservo il valore del timeStamp della frame
                 // in maniera tale da poterla riconoscere al suo ritorno.
-                cMsgPar *timeStamp=&msg->par("timeStamp");
+                /*cMsgPar *timeStamp=&msg->par("timeStamp");
                 long timeStampValue=timeStamp->longValue();
-                timeStart=timeStampValue;
+                timeStart=timeStampValue;*/
+
+                cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
+                timeStart=timeStamp->timestamp;//timeStampValue;
                 // setto una flag in maniera tale da non scrivere niente nelle frame successive
+
                 if(swapper){
                     queueSched.insert(queue.pop());
                     if(deadlValue!=0){
@@ -247,10 +259,16 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                 if( bitWiseValue > priority){
                     // mi conservo il valore del timeStamp della frame
                     // in maniera tale da poterla riconoscere al suo ritorno.
+                    /*
                     cMsgPar *timeStamp=&msg->par("timeStamp");
                     long timeStampValue=timeStamp->longValue();
-                    timeStart=timeStampValue;
                     contestTimeStamp.insert(timeStamp->dup());
+                    */
+                    cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
+                    timeStart=timeStamp->timestamp;//timeStampValue;
+                    contestTimeStamp.insert(timeStamp->dup());
+
+
                     // setto una flag in maniera tale da non scrivere niente nelle frame successive
                     if(swapper){
                        queueSched.insert(queue.pop());
