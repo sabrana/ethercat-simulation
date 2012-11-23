@@ -213,16 +213,17 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
                                 cMsgPar *timeStamp=new cMsgPar("timeStamp");
                                 SimTime timer=simTime()+delay*byte+frameSended*delayFrameToFrame;
-                                timeStamp->setLongValue(timer.raw());
-                                //cTimestampedValue *timeStamp=new cTimestampedValue(simTime(),1.0);
-                                //c->addObject(timeStamp->dup());
+                                timeStamp->setDoubleValue(timer.dbl());
+
+                                //cTimestampedValue *timeStamped=new cTimestampedValue(timer,1.0);
+                                //c->addObject(timeStamped);
 
 
                                 cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
                                 nodeNumber->setLongValue(0);
 
                                 cMsgPar *deadline=new cMsgPar("deadl");
-                                deadline->setLongValue(0);
+                                deadline->setDoubleValue(0.0);
 
                                 cMsgPar *bitWise=new cMsgPar("cmd");
                                 bitWise->setStringValue("11111111");
@@ -291,7 +292,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
                                 cMsgPar *timeStamp=new cMsgPar("timeStamp");
                                 SimTime timer=simTime()+delay*byte;
-                                timeStamp->setLongValue(timer.raw());
+                                timeStamp->setDoubleValue(timer.dbl());
                                 //cTimestampedValue *timeStamp=new cTimestampedValue(simTime(),1.0);
                                 //c->addObject(timeStamp);
 
@@ -301,7 +302,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
                                 cMsgPar *deadline=new cMsgPar("deadl");
-                                deadline->setLongValue(0);
+                                deadline->setDoubleValue(0.0);
 
                                 cMsgPar *bitWise=new cMsgPar("cmd");
                                 bitWise->setStringValue("11111111");
@@ -464,7 +465,7 @@ void EtherCatMACMaster::finish(){
         if(scenario==1){
                 for(int i=0;i<queue.length();i++){
                    cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
-                   EV <<  par->longValue();
+                   EV <<  par->doubleValue();
                    if(i+1<queue.length()){
                        EV << ",";
                    }
