@@ -4,6 +4,7 @@ simple EtherCatMACMaster
 {
     parameters:
         double delay;
+        double delayFrameToFrame;
         bool onlyEndPdu;
         int probabiltyGlobalFrame;
         //bool enable_arb_pen;

@@ -44,7 +44,7 @@ class EtherCatMACSlave : public cSimpleModule
                        // non riscrivere lo stesso valore nella frame successiva
     long relativeDeadline;
     int node;
-    int timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
+    simtime_t timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
     int nContestWin;
     char priority[8];// for like-can configuration
