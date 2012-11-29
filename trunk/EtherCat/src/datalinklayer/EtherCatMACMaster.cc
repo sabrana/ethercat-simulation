@@ -46,7 +46,7 @@ EtherCatMACMaster::~EtherCatMACMaster()
 void EtherCatMACMaster::initialize()
 {
         //delay variabile con max pari al parametro di configurazione
-        int delayMax=par("delay");
+        //double delayMax=par("delayByteToByte");
         nFrameToSend=par("nFrameToSend");
         onlyEndPdu=par("onlyEndPdu");
         typeOfDeadline=par("typeOfDeadline");
@@ -54,8 +54,10 @@ void EtherCatMACMaster::initialize()
         //enable_arb_pen=par("enable_arb_pen");
         scenario=par("scenario");
         nGlobalFrame=par("nGlobalFrame");
-        delay=uniform(0.000009,delayMax);//delayMax=0.000001;
+        delay=par("delayByteToByte");//uniform(0.000009,delayMax);//delayMax=0.000001;
         previusTimestamp=0;
+        countFCS=0;
+        countFCS2=0;
         setCameBack=true;
         setStart=true;
 }
@@ -72,7 +74,15 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                        queueTimeStamp.insert(startFrame);
                        setStart=false;
                    }
+                   countFCS=0;
          }
+        if(strcmp(msg->getName(),"FCS")==0){
+            countFCS++;
+            if(countFCS==4){
+                    cTimestampedValue *startFrame=new cTimestampedValue(simTime(),1.0);
+                    queueTimeStampFinishSend.insert(startFrame);
+            }
+        }
         if(strcmp(msg->getName(),"SFD")==0)
             setStart=true;
         send(msg->dup(),"phys$o");
@@ -317,16 +327,17 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
        if(strcmp(msg->getName(),"Preamble")==0){
            type1++;
+           countFCS2=0;
            if(setCameBack){
-               cTimestampedValue *cameBackFrame=new cTimestampedValue(simTime(),1.0);
-               queueTimeStampCameBack.insert(cameBackFrame);
-               setCameBack=false;
-           }
-
+                    cTimestampedValue *cameBackFrame=new cTimestampedValue(simTime(),1.0);
+                    queueTimeStampCameBack.insert(cameBackFrame);
+                    setCameBack=false;
+            }
        }
        if(strcmp(msg->getName(),"SFD")==0){
                   type2++;
                   setCameBack=true;
+
        }
        if(strcmp(msg->getName(),"DA")==0){
                   type3++;
@@ -342,6 +353,11 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
        }
        if(strcmp(msg->getName(),"FCS")==0){
                   type7++;
+                  countFCS2++;
+                  if(countFCS2==4){
+                     cTimestampedValue *cameBackFrame=new cTimestampedValue(simTime(),1.0);
+                     queueTimeStampCameBackFinish.insert(cameBackFrame);
+                  }
        }
 
 
@@ -389,6 +405,26 @@ void EtherCatMACMaster::finish(){
             }
         }
         EV <<"]\n";
+        EV <<"DIFFERENCE BETWEEN START FIRST PREAMBLE FRAME AND START LAST FCS FRAME:[";
+        for(int i=0;i<queueTimeStampFinishSend.length();i++){
+                    cTimestampedValue *par1= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+                    cTimestampedValue *par2= check_and_cast<cTimestampedValue*>(queueTimeStampFinishSend.get(i));
+                    EV <<  par2->timestamp-par1->timestamp;
+                    if(i+1<queueTimeStampFinishSend.length()){
+                        EV << ",";
+                    }
+                }
+        EV <<"]\n";
+        EV <<"DIFFERENCE BETWEEN START FIRST PREAMBLE FRAME AND FINISH LAST FCS FRAME:[";
+                for(int i=0;i<queueTimeStampCameBackFinish.length();i++){
+                            cTimestampedValue *par1= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
+                            cTimestampedValue *par2= check_and_cast<cTimestampedValue*>(queueTimeStampCameBackFinish.get(i));
+                            EV <<  par2->timestamp-par1->timestamp;
+                            if(i+1<queueTimeStampCameBackFinish.length()){
+                                EV << ",";
+                            }
+                        }
+        EV <<"]\n";
         EV <<"DIFFERENCE BETWEEN FRAME START & FRAME-NEXT START:[";
         for(int i=1;i<queueTimeStamp.length();i++){
             cTimestampedValue *par0= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i-1));
@@ -408,6 +444,7 @@ void EtherCatMACMaster::finish(){
             }
         }
         EV <<"]\n";
+
         EV <<"#Cycle time\n";
         EV <<"DIFFERENCE BETWEEN FRAME START & FRAME END:[";
         for(int i=0;i<queueTimeStampCameBack.length();i++){
