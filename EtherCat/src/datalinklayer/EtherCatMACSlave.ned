@@ -5,7 +5,7 @@ simple EtherCatMACSlave
 {
     parameters:
         
-        double delay;
+        double delaySlave;
         int scenario=default(1);
         double probability=default(50);
         int typeOfDeadline;//relative=1,absolute=2

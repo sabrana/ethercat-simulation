@@ -28,7 +28,7 @@ Define_Module(EtherCatMACSlave);
 
 void EtherCatMACSlave::initialize()
 {
-    delay=par("delay");
+    delay=par("delaySlave");
     //enable_arb_pen=par("enable_arb_pen");
     scenario=par("scenario");
     prob=par("probability");
@@ -51,7 +51,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     //EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
 
     if(msg->isSelfMessage()){
-            EV << "I'm EtherCatMACSlave and receive pyload "<< msg << "\n";
+            EV << "I'm EtherCatMACSlave and receive payload "<< msg <<" and resend at time "<< simTime()<< "\n";
             if(gate("phys2$o")->getNextGate()->isConnected()){
                 send(msg->dup(),"phys2$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";

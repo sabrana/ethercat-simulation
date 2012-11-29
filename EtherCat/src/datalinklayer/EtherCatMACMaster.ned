@@ -3,7 +3,7 @@ package ethercat.datalinklayer;
 simple EtherCatMACMaster 
 {
     parameters:
-        double delay;
+        double delayByteToByte;
         double delayFrameToFrame;
         bool onlyEndPdu;
         int nGlobalFrame;
