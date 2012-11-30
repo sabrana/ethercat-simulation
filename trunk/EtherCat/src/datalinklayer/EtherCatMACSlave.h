@@ -32,7 +32,7 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queueSched;
 
     cQueue timeStampQueue;
-    cQueue contestTimeStamp;
+    //cQueue contestTimeStamp;
 
     int globalPacket;
     bool enable_arb_pen;
@@ -47,7 +47,7 @@ class EtherCatMACSlave : public cSimpleModule
     double timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
     int nContestWin;
-    char priority[8];// for like-can configuration
+    //char priority[8];// for like-can configuration
   public:
     EtherCatMACSlave();
     virtual ~EtherCatMACSlave();
@@ -60,7 +60,7 @@ class EtherCatMACSlave : public cSimpleModule
     void queueGenerator();
     bool controlIfIwon(cMessage *msg);
     bool test(const char* a ,const char* b);
-    void sortQueue(cMsgPar *bitWise);
+    int sortQueue(cMsgPar *bitWise);
     void checkIfIWinOnArbPend(cMessage *msg);
 };
 
