@@ -53,7 +53,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     //EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
 
     if(msg->isSelfMessage()){
-            EV << "I'm EtherCatMACSlave HM SELF "<< node << "  and receive payload "<< msg <<" and resend at time "<< simTime().dbl()<< "\n";
+            EV << "I'm EtherCatMACSlave HM SELF node:"<< node << "  and receive payload "<< msg <<" and resend at time "<< simTime().dbl()<< "\n";
             if(gate("phys2$o")->getNextGate()->isConnected()){
                 send(msg->dup(),"phys2$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
@@ -71,9 +71,8 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
        // EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?:"<<  \n";
-        EV << "I'm EtherCatMACSlave HM psy1 "<< node <<" and receive single 1byte cPacket:" << msg->getName() << " at time "<< simTime().dbl()<<"\n";
+        EV << "I'm EtherCatMACSlave HM psy1 node:"<< node <<" and receive single 1byte cPacket:" << msg->getName() << " at time "<< simTime().dbl()<<"\n";
         queueGenerator();
-        EV << "\n\n----handle message-------2\n";
         if(strcmp(msg->getName(),"END_PDU")==0){
             //identifico il nodo
             cMsgPar *nodeNumber=&msg->par("nodeNumber");
@@ -352,11 +351,14 @@ void EtherCatMACSlave::queueGenerator(){
         cMsgPar *timeStamp=new cMsgPar("timestamp");
         timeStamp->setDoubleValue(simTime().dbl());
         //SORTED
+        queueTemp.insert(bitWise);
+        bornTimeStamp.insert(timeStamp);
         int i=sortQueue(bitWise);
         // FIFO
         //queue.insert(bitWise->dup());
         //queueTemp.insert(bitWise->dup());
-        if(i!=0)
+        ev <<"\n\nI="<<i<<"\n";
+        if(i>=0)
             timeStampQueue.insertBefore(timeStampQueue.get(i),timeStamp->dup());
         else
             timeStampQueue.insert(timeStamp->dup());
@@ -377,7 +379,6 @@ int EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
                     bool tester=value>result; // value maggiore di result
                     if(value>result){
                        ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
-                       //*temp=*par;
                        queue.insertBefore(queue.get(i),msgPar->dup());
                        finded=true;
                        break;
@@ -386,6 +387,7 @@ int EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
                 }
                if(!finded){
                   queue.insert(msgPar->dup());
+                  i=-1;
                }
                /*
                 finded=false;
@@ -416,9 +418,7 @@ int EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
                 bool tester=test(value,result); // value maggiore di result
                 if(tester){
                    ev <<" confronto result: "<<result<< " and value: "<< value << "result<value?--> "<<tester;
-                   //*temp=*par;
                    queue.insertBefore(queue.get(i),msgPar->dup());
-
                    finded=true;
                    break;
                 }
@@ -426,6 +426,7 @@ int EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
             }
            if(!finded){
               queue.insert(msgPar->dup());
+              i=-1;
            }
            /*
             finded=false;
@@ -490,7 +491,7 @@ bool EtherCatMACSlave::test(const char* a,const char* b){
             return false;
         }
     }
-    return true;
+    return false;
 }
 
 
@@ -574,17 +575,26 @@ void EtherCatMACSlave::finish(){
                     EV << ",";
                 }
             }
-
+            EV <<"]\n";
+                       EV <<"LISTA BORN TIMESTAMP CONFRONTO:[";
+                       for(int i=0;i<bornTimeStamp.length();i++){
+                          cMsgPar *par= check_and_cast<cMsgPar*>(bornTimeStamp.get(i));
+                          EV <<  par->doubleValue();
+                          if(i+1<bornTimeStamp.length()){
+                              EV << ",";
+                          }
+                      }
             EV <<"]\n";
                 EV <<"LISTA TIMESTAMP CONFRONTO:[";
                 for(int i=0;i<timeStampQueue.length();i++){
                    cMsgPar *par= check_and_cast<cMsgPar*>(timeStampQueue.get(i));
-                   EV <<  par->longValue();
+                   EV <<  par->doubleValue();
                    if(i+1<timeStampQueue.length()){
                        EV << ",";
                    }
                }
-            EV <<"]\n\n";
+
+             EV <<"]\n\n";
         }
 
 }

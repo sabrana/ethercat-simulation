@@ -32,7 +32,7 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queueSched;
 
     cQueue timeStampQueue;
-    //cQueue contestTimeStamp;
+    cQueue bornTimeStamp;
 
     int globalPacket;
     bool enable_arb_pen;
