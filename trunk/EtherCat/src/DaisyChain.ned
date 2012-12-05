@@ -18,6 +18,7 @@ network DaisyChain
 
         }
         slave[n]: Slave {
+            indice=index;
             @display("p=253,122,ring");
 
         }
