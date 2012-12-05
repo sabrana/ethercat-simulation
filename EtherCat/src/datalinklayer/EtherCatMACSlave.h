@@ -30,7 +30,6 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queue;
     cQueue queueTemp;
     cQueue queueSched;
-
     cQueue timeStampQueue;
     cQueue bornTimeStamp;
 
@@ -43,11 +42,11 @@ class EtherCatMACSlave : public cSimpleModule
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
                        // non riscrivere lo stesso valore nella frame successiva
     double absoluteDeadline;
-    int node;
+    unsigned int indice;
     double timeStart; // corrisponde ad identificare la frame attraverso un timeStamp del Master
                    // alla partenza della frame
     int nContestWin;
-    //char priority[8];// for like-can configuration
+    char priority[8];// for like-can configuration
   public:
     EtherCatMACSlave();
     virtual ~EtherCatMACSlave();

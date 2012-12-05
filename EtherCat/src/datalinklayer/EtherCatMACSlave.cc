@@ -37,7 +37,9 @@ void EtherCatMACSlave::initialize()
     nContestWin=0;
     globalPacket=0;
     underControl=false;
-    /*
+    indice=par("indice");
+    //priority[0]=indice;
+
     for(int i=0;i<8;i++){
         int random=uniform (0,100);
         if(random>50)
@@ -45,7 +47,7 @@ void EtherCatMACSlave::initialize()
         else
             priority[i]='0';
     }
-    */
+
 }
 
 void EtherCatMACSlave::handleMessage(cMessage *msg)
@@ -53,7 +55,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
     //EV << "I'm EtherCatMACSlave and handleMessage to gate "<< msg->getArrivalGate()->getFullName() << endl;
 
     if(msg->isSelfMessage()){
-            EV << "I'm EtherCatMACSlave HM SELF node:"<< node << "  and receive payload "<< msg <<" and resend at time "<< simTime().dbl()<< "\n";
+            EV << "I'm EtherCatMACSlave HM SELF node:"<< indice << "  and receive payload "<< msg <<" and resend at time "<< simTime().dbl()<< "\n";
             if(gate("phys2$o")->getNextGate()->isConnected()){
                 send(msg->dup(),"phys2$o");
                 EV << "I'm EtherCatMACSlave and send "<< msg << "to other Slave\n";
@@ -71,19 +73,10 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
 
     else if(msg->getArrivalGate()==gate("phys1$i")){
        // EV << "I'm EtherCatMACSlave and receive single 1byte cPacket  "<< msg << ", is Global Value?:"<<  \n";
-        EV << "I'm EtherCatMACSlave HM psy1 node:"<< node <<" and receive single 1byte cPacket:" << msg->getName() << " at time "<< simTime().dbl()<<"\n";
+        EV << "I'm EtherCatMACSlave HM psy1 node:"<< indice <<" and receive single 1byte cPacket:" << msg->getName() << " at time "<< simTime().dbl()<<"\n";
         queueGenerator();
         if(strcmp(msg->getName(),"END_PDU")==0){
-            //identifico il nodo
-            cMsgPar *nodeNumber=&msg->par("nodeNumber");
-            long nodeNumberValue=nodeNumber->longValue();
-            nodeNumberValue++;
-            node=nodeNumberValue;
-            if(node==0){
-                node=nodeNumberValue;
-            }
-            nodeNumber->setLongValue(nodeNumberValue);
-            //lancio il generatore di code
+
 
             //operazioni sull'indirizzo sequenziale
             cMsgPar *adp=&msg->par("ADP");
@@ -105,8 +98,6 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                 cPacket *byte = (cPacket*)msg;
                 send(byte,"upperLayerOut");
             }
-
-
             else if(address==0){
                     cPacket *byte = (cPacket*)msg;
                     ev << "I'm EtherCatMACSlave and decapsulate payload lenght: "<<byte->getByteLength() << endl;
@@ -114,7 +105,6 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
                     EV << "I'm EtherCatMACSlave and send "<< byte << "to my upperLayerOut\n";
                 }
             else{
-
                     scheduleAt(simTime()+delay, msg->dup());//era event
                     //scheduleAt(simTime()+uniform(0,1), event->dup());
                 }
@@ -123,9 +113,7 @@ void EtherCatMACSlave::handleMessage(cMessage *msg)
         else{
             scheduleAt(simTime()+delay, msg->dup());//era event
             //scheduleAt(simTime()+uniform(0,1), event->dup());
-
         }
-
     }else if(msg->getArrivalGate()==gate("upperLayerIn")){
         scheduleAt(simTime()+delay, msg->dup());//era event
         //scheduleAt(simTime()+uniform(0,1), event->dup());
@@ -172,8 +160,6 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
         return false;
     }
     */
-
-
     // se siamo arrivati qui significa che stiamo controllando la frame giusta
     // sia che vinco sia che perdo, posso ripartecipare alle contese
     underControl=false;
@@ -218,7 +204,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
     if(scenario==1){
         cMsgPar *deadl=&msg->par("deadl");
         double deadlValue=deadl->doubleValue();
-        EV << "I'm EtherCatMACSlave "<< node<<" And I verified the Frame, deadValue: "<< deadlValue<< " \n";
+        EV << "I'm EtherCatMACSlave "<< indice<<" And I verified the Frame, deadValue: "<< deadlValue<< " \n";
         if(queue.length()>0){
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
             EV << "confronto il frame passante:"<<deadlValue<<" , la testa vale:"<< queueHead->doubleValue() << "\n";
@@ -245,7 +231,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                 else{
                     underControl=true;
                 }
-                EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead->doubleValue() << "\n";
+                EV << "I'm EtherCatMACSlave "<< indice<<" And I win the context and I write:" << queueHead->doubleValue() << "\n";
                 deadl->setDoubleValue(queueHead->doubleValue());
             }
         }
@@ -268,17 +254,12 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 
                     //cMsgPar *timeStamp=&msg->par("timeStamp");now
                     //double timeStampValue=timeStamp->doubleValue();
-
-
                     /*
                     cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
                     EV << "PRIMA DI CRASHARE SCRIVI QUESTO2" << timeStamp->timestamp;
                     timeStart=timeStamp->timestamp;//timeStampValue;
                     */
-
                     //contestTimeStamp.insert(timeStamp->dup());
-
-
                     // setto una flag in maniera tale da non scrivere niente nelle frame successive
                     if(swapper){
                        queueSched.insert(queue.pop());
@@ -295,7 +276,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << queueHead << "\n";
                     bitWise->setStringValue(queueHead->stringValue());
                     */
-                    EV << "I'm EtherCatMACSlave "<< node<<" And I win the context and I write:" << par->dup()->stringValue() << "\n";
+                    EV << "I'm EtherCatMACSlave "<< indice<<" And I win the context and I write:" << par->dup()->stringValue() << "\n";
                     bitWise->setStringValue(par->dup()->stringValue());
                     cMsgPar *deadl=&msg->par("deadl");
                     cMsgPar *timeStamp= check_and_cast<cMsgPar*>(timeStampQueue.get(0));
@@ -332,18 +313,28 @@ void EtherCatMACSlave::queueGenerator(){
     if(scenario==2){
 
         /* con uno scenario di valore variabile */
-        int relativeDeadline=uniform (0,100);
+        int random=uniform (0,100);
         //char result[8]={'0','0','0','0','0','0','0','0'};
         //char temp[8];
         //itoa (relativeDeadline,temp,2);
         cMsgPar *bitWise=new cMsgPar("cmd");
 
-        char* h1="00000001";
-        char* h2="00001111";
-        char* h3="01111111";
-        if(relativeDeadline<15)
+        char h1[16]={'0','0','0','0','0','0','0','1'};
+        for(int i=0;i<8;i++){
+            h1[8+i]=priority[i];
+        }
+        char h2[16]={'0','0','0','0','1','1','1','1'};
+        for(int i=0;i<8;i++){
+            h2[8+i]=priority[i];
+        }
+        char h3[16]={'0','0','0','1','1','1','1','1'};
+        for(int i=0;i<8;i++){
+            h3[8+i]=priority[i];
+        }
+
+        if(random<15)
             bitWise->setStringValue(h1);
-        else if(relativeDeadline<50)
+        else if(random<50)
             bitWise->setStringValue(h2);
         else
             bitWise->setStringValue(h3);
@@ -362,8 +353,6 @@ void EtherCatMACSlave::queueGenerator(){
             timeStampQueue.insertBefore(timeStampQueue.get(i),timeStamp->dup());
         else
             timeStampQueue.insert(timeStamp->dup());
-
-
     }
     EV << "END QUEUE GENERATOR";
 }
@@ -446,7 +435,6 @@ int EtherCatMACSlave::sortQueue(cMsgPar *msgPar){
             if(!finded){
                queueTemp.insert(msgPar->dup());
             }*/
-
     }
     return i;
 }
@@ -497,7 +485,7 @@ bool EtherCatMACSlave::test(const char* a,const char* b){
 
 void EtherCatMACSlave::finish(){
 
-        EV << "### NODE: "<< node<<"\n";
+        EV << "### NODE: "<< indice<<"\n";
         EV << "I received " << globalPacket << " globalPacket"<< "\n";
         EV << "I win "<< nContestWin << " time/s a contest \n";
         EV <<"FRAME GENERATE: "<<queueTemp.length()<< "\n";
@@ -533,20 +521,11 @@ void EtherCatMACSlave::finish(){
            EV <<"]\n\n";
 
         }
-        if(scenario==2){/*
-            EV <<"LISTA TIMESTAMP CONTEST:[";
-            for(int i=0;i<contestTimeStamp.length();i++){
-               cMsgPar *par= check_and_cast<cMsgPar*>(contestTimeStamp.get(i));
-               EV <<  par->longValue();
-               if(i+1<contestTimeStamp.length()){
-                   EV << ",";
-               }
-           }
-            */
+        if(scenario==2){
             EV <<"LISTA FRAME GENERATE:[";
             for(int i=0;i<queueTemp.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
-                for(int k=0;k<8;k++){
+                for(int k=0;k<16;k++){
                     EV <<  par->stringValue()[k];
                 }
                 if(i+1<queueTemp.length()){
@@ -557,7 +536,7 @@ void EtherCatMACSlave::finish(){
             EV <<"LISTA FRAME SCHEDULATE:[";
             for(int i=0;i<queueSched.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queueSched.get(i));
-                for(int k=0;k<8;k++){
+                for(int k=0;k<16;k++){
                     EV <<  par->stringValue()[k];
                 }
                 if(i+1<queueSched.length()){
@@ -568,7 +547,7 @@ void EtherCatMACSlave::finish(){
             EV <<"LISTA FRAME RIMASTE IN CODA:[";
             for(int i=0;i<queue.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
-                for(int k=0;k<8;k++){
+                for(int k=0;k<16;k++){
                     EV <<  par->stringValue()[k];
                 }
                 if(i+1<queue.length()){
@@ -576,14 +555,14 @@ void EtherCatMACSlave::finish(){
                 }
             }
             EV <<"]\n";
-                       EV <<"LISTA BORN TIMESTAMP CONFRONTO:[";
-                       for(int i=0;i<bornTimeStamp.length();i++){
-                          cMsgPar *par= check_and_cast<cMsgPar*>(bornTimeStamp.get(i));
-                          EV <<  par->doubleValue();
-                          if(i+1<bornTimeStamp.length()){
-                              EV << ",";
-                          }
-                      }
+               EV <<"LISTA BORN TIMESTAMP CONFRONTO:[";
+               for(int i=0;i<bornTimeStamp.length();i++){
+                  cMsgPar *par= check_and_cast<cMsgPar*>(bornTimeStamp.get(i));
+                  EV <<  par->doubleValue();
+                  if(i+1<bornTimeStamp.length()){
+                      EV << ",";
+                  }
+              }
             EV <<"]\n";
                 EV <<"LISTA TIMESTAMP CONFRONTO:[";
                 for(int i=0;i<timeStampQueue.length();i++){
@@ -598,5 +577,3 @@ void EtherCatMACSlave::finish(){
         }
 
 }
-
-

@@ -53,6 +53,7 @@ class EtherCatMACMaster : public cSimpleModule
       int type7;
       int type8;
       int type9;
+      int type10;
       int byteReturn;
       int valueData;
       int scenario;
