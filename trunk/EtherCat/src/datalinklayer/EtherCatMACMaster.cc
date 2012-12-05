@@ -33,6 +33,7 @@ EtherCatMACMaster::EtherCatMACMaster()
     type7=0;
     type8=0;
     type9=0;
+    type10=0;
 
 }
 
@@ -209,21 +210,19 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 SimTime timer=simTime()+delay*byte+frameSended*delayFrameToFrame;
                                 timeStamp->setDoubleValue(timer.dbl());
 
-                                cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
-                                nodeNumber->setLongValue(0);
+
 
                                 cMsgPar *deadline=new cMsgPar("deadl");
                                 deadline->setDoubleValue(0.0);
 
                                 cMsgPar *bitWise=new cMsgPar("cmd");
-                                bitWise->setStringValue("11111111");
+                                bitWise->setStringValue("1111111111111111");
                                 // questa è la frame a più bassa priorità
 
                                 c->addPar(length);
                                 c->addPar(adp);
                                 c->addPar(global);
                                 c->addPar(timeStamp);
-                                c->addPar(nodeNumber);
                                 c->addPar(deadline);
                                 c->addPar(bitWise);
 
@@ -286,16 +285,11 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 //cTimestampedValue *timeStamp=new cTimestampedValue(simTime(),1.0);
                                 //c->addObject(timeStamp);
 
-
-                                cMsgPar *nodeNumber=new cMsgPar("nodeNumber");
-                                nodeNumber->setLongValue(0);
-
-
                                 cMsgPar *deadline=new cMsgPar("deadl");
                                 deadline->setDoubleValue(0.0);
 
                                 cMsgPar *bitWise=new cMsgPar("cmd");
-                                bitWise->setStringValue("11111111");
+                                bitWise->setStringValue("1111111111111111");
                                 // questa è la frame a più bassa priorità
                                 //definita con il parametro cmd
 
@@ -303,7 +297,6 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                                 c->addPar(adp);
                                 c->addPar(global);
                                 c->addPar(timeStamp);
-                                c->addPar(nodeNumber);
                                 c->addPar(deadline);
                                 c->addPar(bitWise);
 
@@ -368,12 +361,14 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
            if(globalValue){
                type9++;
                if(scenario==1){
-               cMsgPar *deadl=&msg->par("deadl");
-               queue.insert(deadl->dup());
+                   cMsgPar *deadl=&msg->par("deadl");
+                   queue.insert(deadl->dup());
                }
                if(scenario==2){
+                   type10++;
                    cMsgPar *deadl=&msg->par("cmd");
                    queue.insert(deadl->dup());
+                   ev << "\n\n\n\n.---------->>>>"<<deadl->stringValue()<<"\n\n\n\n";
                }
            }
        }
@@ -393,6 +388,7 @@ void EtherCatMACMaster::finish(){
         ev << "PayLoad:"    <<  type6   << "\n";
         ev << "END_PDU:"    << type8   << "\n";
         ev << "END_PDU_Global:"    << type9   << "\n";
+        ev << "END_PDU_Global +cmd:"    << type10   << "\n";
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
@@ -480,7 +476,7 @@ void EtherCatMACMaster::finish(){
         if(scenario==2){
                 for(int i=0;i<queue.length();i++){
                     cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
-                    for(int k=0;k<8;k++){
+                    for(int k=0;k<16;k++){
                         EV <<  par->stringValue()[k];
                     }
                     if(i+1<queue.length()){

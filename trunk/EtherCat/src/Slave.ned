@@ -5,6 +5,7 @@ import ethercat.datalinklayer.*;
 module Slave
 {
     parameters:
+        int indice;
         @display("i=misc/node_vs;bgb=173,164");
     gates:
         inout prev;
@@ -14,6 +15,7 @@ module Slave
             @display("p=83,34;is=vl");
         }
         mac: EtherCatMACSlave {
+            indice=indice;
             @display("p=83,119");
         }
     connections allowunconnected:
