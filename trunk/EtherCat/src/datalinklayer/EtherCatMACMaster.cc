@@ -61,8 +61,8 @@ void EtherCatMACMaster::initialize()
         countFCS2=0;
         setCameBack=true;
         setStart=true;
-        sched=0.0;
-        miss=0.0;
+        sched=0;
+        miss=0;
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -363,9 +363,10 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
            if(globalValue){
                type9++;
                if(scenario==1){
-                   type10++;
                    cMsgPar *deadl=&msg->par("deadl");
                    double deadlineValue=deadl->doubleValue();
+                   if(deadlineValue!=0.0){
+                   type10++;
                    cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
                    queueSched.insert(now);
                    if(now->timestamp.dbl()<deadlineValue){
@@ -373,6 +374,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    }
                    else miss++;
                    queue.insert(deadl->dup());
+                   }
                }
                if(scenario==2){
 
@@ -403,8 +405,8 @@ void EtherCatMACMaster::finish(){
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
         if(scenario==1){
-            ev << "%sched:" <<  sched << "\n";
-            ev << "%miss:" <<  miss << "\n";
+            ev << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
+            ev << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
             ev << "%total:" <<  type10 << "\n";
         }
 
