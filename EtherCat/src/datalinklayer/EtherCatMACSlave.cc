@@ -29,6 +29,11 @@ Define_Module(EtherCatMACSlave);
 void EtherCatMACSlave::initialize()
 {
     delay=par("delaySlave");
+    time1=par("time1");
+    time2=par("time2");
+    time3=par("time3");
+    percHigh=par("percHigh");
+    percMedium=par("percMedium");
     //enable_arb_pen=par("enable_arb_pen");
     scenario=par("scenario");
     prob=par("probability");
@@ -38,8 +43,8 @@ void EtherCatMACSlave::initialize()
     globalPacket=0;
     underControl=false;
     indice=par("indice");
-    //priority[0]=indice;
 
+    //priority del nodo
     for(int i=0;i<8;i++){
         int random=uniform (0,100);
         if(random>50)
@@ -47,6 +52,20 @@ void EtherCatMACSlave::initialize()
         else
             priority[i]='0';
     }
+    level1=false;
+    level2=false;
+    level3=false;
+    int q1=uniform (0,100);
+    int q2=uniform (0,100);
+    int q3=uniform (0,100);
+
+    if(q1>50)
+        level1=true;
+    if(q2>50)
+        level2=true;
+    if(q3>50)
+        level3=true;
+
 
 }
 
@@ -294,7 +313,18 @@ void EtherCatMACSlave::queueGenerator(){
         return;
 
     if(scenario==1){
-        absoluteDeadline=uniform (simTime().dbl(), simTime().dbl()+simTime().dbl()*0.1);
+        int random=uniform (0,100);
+
+        //absoluteDeadline=uniform (simTime().dbl()+simTime().dbl()*0.01, simTime().dbl()+simTime().dbl()*0.1);
+        if(random<percHigh && level1)
+            absoluteDeadline=simTime().dbl()+time1;
+        else if(random<(percMedium+percHigh) && level2)
+            absoluteDeadline=simTime().dbl()+time2;
+        else if(level3)
+            absoluteDeadline=simTime().dbl()+time3;
+        else
+            return;
+
         cMsgPar *deadl=new cMsgPar("deadline");
         //EV <<"Simtime(): "<< simTime().raw()<<" relativeDeadline:"<<relativeDeadline<< " diff: "<<simTime().raw()-relativeDeadline;
         if(typeOfDeadline==2){
@@ -327,18 +357,19 @@ void EtherCatMACSlave::queueGenerator(){
         for(int i=0;i<8;i++){
             h2[8+i]=priority[i];
         }
-        char h3[16]={'0','0','0','1','1','1','1','1'};
+        char h3[16]={'0','0','1','1','1','1','1','1'};
         for(int i=0;i<8;i++){
             h3[8+i]=priority[i];
         }
 
-        if(random<15)
+        if(random<percHigh && level1)
             bitWise->setStringValue(h1);
-        else if(random<50)
+        else if(random<(percHigh+percMedium) && level2)
             bitWise->setStringValue(h2);
-        else
+        else if(level3)
             bitWise->setStringValue(h3);
-
+        else
+            return;
         cMsgPar *timeStamp=new cMsgPar("timestamp");
         timeStamp->setDoubleValue(simTime().dbl());
         //SORTED
@@ -486,11 +517,15 @@ bool EtherCatMACSlave::test(const char* a,const char* b){
 void EtherCatMACSlave::finish(){
 
         EV << "### NODE: "<< indice<<"\n";
+        EV << "level1 active: "<< level1<<"\n";
+        EV << "level2 active: "<< level2<<"\n";
+        EV << "level3 active: "<< level3<<"\n";
         EV << "I received " << globalPacket << " globalPacket"<< "\n";
         EV << "I win "<< nContestWin << " time/s a contest \n";
         EV <<"FRAME GENERATE: "<<queueTemp.length()<< "\n";
         EV <<"FRAME SCHEDULATE: "<<queueSched.length()<< "\n";
         EV <<"FRAME RIMASTE IN CODA: "<<queue.length()<< "\n";
+
         if(scenario==1){
             EV <<"LISTA FRAME GENERATE:[";
             for(int i=0;i<queueTemp.length();i++){
