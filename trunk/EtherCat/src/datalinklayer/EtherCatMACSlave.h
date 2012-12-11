@@ -27,11 +27,22 @@ class EtherCatMACSlave : public cSimpleModule
 {
   private:
     simtime_t delay;
+    double time1;
+    double time2;
+    double time3;
+
     cQueue queue;
     cQueue queueTemp;
     cQueue queueSched;
     cQueue timeStampQueue;
     cQueue bornTimeStamp;
+
+    int percHigh;
+    int percMedium;
+
+    bool level1;
+    bool level2;
+    bool level3;
 
     int globalPacket;
     bool enable_arb_pen;
