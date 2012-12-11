@@ -236,7 +236,6 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 
                 /*
                 cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
-                EV << "PRIMA DI CRASHARE SCRIVI QUESTO" << timeStamp->timestamp;
                 timeStart= timeStamp->timestamp;//timeStampValue;
                 */
                 // setto una flag in maniera tale da non scrivere niente nelle frame successive
@@ -307,7 +306,6 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 }
 
 void EtherCatMACSlave::queueGenerator(){
-    EV << "QUEUE GENERATOR";
     double random=uniform (0.0, 100.0,0.1);
     if(random>=prob)
         return;

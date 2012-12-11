@@ -31,6 +31,7 @@ class EtherCatMACMaster : public cSimpleModule
       simtime_t delayFrameToFrame;// ritardo tra una frame ethernet ed un altra
       bool onlyEndPdu;
       cQueue queue;
+      cQueue queueSched;
       cQueue queueTimeStamp; // quando parte ovvero mando il primo
       cQueue queueTimeStampFinishSend; // quando parte l'ultimo pacchetto della prima frame
       cQueue queueTimeStampCameBack;
@@ -59,6 +60,9 @@ class EtherCatMACMaster : public cSimpleModule
       int scenario;
       const char* previusValue;
       long previusTimestamp;
+
+      int sched;
+      int miss;
 
   public:
 

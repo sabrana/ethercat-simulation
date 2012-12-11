@@ -61,6 +61,8 @@ void EtherCatMACMaster::initialize()
         countFCS2=0;
         setCameBack=true;
         setStart=true;
+        sched=0.0;
+        miss=0.0;
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -361,11 +363,19 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
            if(globalValue){
                type9++;
                if(scenario==1){
+                   type10++;
                    cMsgPar *deadl=&msg->par("deadl");
+                   double deadlineValue=deadl->doubleValue();
+                   cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
+                   queueSched.insert(now);
+                   if(now->timestamp.dbl()<deadlineValue){
+                       sched++;
+                   }
+                   else miss++;
                    queue.insert(deadl->dup());
                }
                if(scenario==2){
-                   type10++;
+
                    cMsgPar *deadl=&msg->par("cmd");
                    queue.insert(deadl->dup());
                    ev << "\n\n\n\n.---------->>>>"<<deadl->stringValue()<<"\n\n\n\n";
@@ -392,6 +402,12 @@ void EtherCatMACMaster::finish(){
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
+        if(scenario==1){
+            ev << "%sched:" <<  sched << "\n";
+            ev << "%miss:" <<  miss << "\n";
+            ev << "%total:" <<  type10 << "\n";
+        }
+
         EV <<"TIMESTAMP START FRAME["<<queueTimeStamp.length()<<"]:[";
         for(int i=0;i<queueTimeStamp.length();i++){
             cTimestampedValue *par= check_and_cast<cTimestampedValue*>(queueTimeStamp.get(i));
@@ -463,7 +479,7 @@ void EtherCatMACMaster::finish(){
                         }
                 }
         EV <<"]";
-        EV <<"\n##MASTER\nLISTA FRAME LISTA FRAME SCHEDULATE["<<queue.length()<<"]:[";
+        EV <<"\n##MASTER\nLISTA FRAME LISTA FRAME SCHEDULATE DEADLINE VALUE ["<<queue.length()<<"]:[";
         if(scenario==1){
                 for(int i=0;i<queue.length();i++){
                    cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
@@ -471,7 +487,17 @@ void EtherCatMACMaster::finish(){
                    if(i+1<queue.length()){
                        EV << ",";
                    }
-             }
+                }
+         EV <<"]\n";
+        EV <<"LISTA FRAME LISTA FRAME SCHEDULATE TIMESTAMP VALUE ["<<queueSched.length()<<"]:[";
+                for(int i=0;i<queueSched.length();i++){
+                                   cTimestampedValue *par0= check_and_cast<cTimestampedValue*>(queueSched.get(i));
+                                   EV <<  par0->timestamp;
+                                   if(i+1<queueSched.length()){
+                                       EV << ",";
+                                   }
+                }
+
         }
         if(scenario==2){
                 for(int i=0;i<queue.length();i++){
