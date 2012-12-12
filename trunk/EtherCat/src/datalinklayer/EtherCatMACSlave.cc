@@ -34,6 +34,7 @@ void EtherCatMACSlave::initialize()
     time3=par("time3");
     percHigh=par("percHigh");
     percMedium=par("percMedium");
+    setLevel=par("setLevel");
     //enable_arb_pen=par("enable_arb_pen");
     scenario=par("scenario");
     prob=par("probability");
@@ -52,20 +53,23 @@ void EtherCatMACSlave::initialize()
         else
             priority[i]='0';
     }
-    level1=false;
-    level2=false;
-    level3=false;
-    int q1=uniform (0,100);
-    int q2=uniform (0,100);
-    int q3=uniform (0,100);
+    if(!setLevel){
+        int q1=uniform (0,100);
+        int q2=uniform (0,100);
+        int q3=uniform (0,100);
 
-    if(q1>50)
-        level1=true;
-    if(q2>50)
-        level2=true;
-    if(q3>50)
-        level3=true;
-
+        if(q1>50)
+            level1=true;
+        if(q2>50)
+            level2=true;
+        if(q3>50)
+            level3=true;
+    }
+    else{
+        level1=par("level1");
+        level2=par("level2");
+        level3=par("level3");
+    }
 
 }
 
