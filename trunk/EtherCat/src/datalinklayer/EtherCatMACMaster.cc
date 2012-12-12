@@ -393,10 +393,12 @@ void EtherCatMACMaster::finish(){
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
-    myfile<<type10<<" prob: "<<probability<<"\n";
-    myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
-    myfile << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
-    myfile << "%total:" <<  type10 << "\n";
+    myfile << probability << (double) ((double)miss/(double)type10)*100;
+
+    //myfile<<type10<<" prob: "<<probability<<"\n";
+    //myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
+    //myfile << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
+    //myfile << "%total:" <<  type10 << "\n";
 
 
     myfile.close();
