@@ -360,16 +360,22 @@ void EtherCatMACSlave::queueGenerator(){
             h3[8+i]=priority[i];
         }
 
-        if(random<percHigh && level1)
+        if(random<percHigh && level1){
             bitWise->setStringValue(h1);
-        else if(random<(percHigh+percMedium) && level2)
+            absoluteDeadline=simTime().dbl()+time1;
+        }
+        else if(random<(percHigh+percMedium) && level2){
             bitWise->setStringValue(h2);
-        else if(level3)
+            absoluteDeadline=simTime().dbl()+time2;
+        }
+        else if(level3){
             bitWise->setStringValue(h3);
+            absoluteDeadline=simTime().dbl()+time3;
+        }
         else
             return;
         cMsgPar *timeStamp=new cMsgPar("timestamp");
-        timeStamp->setDoubleValue(simTime().dbl());
+        timeStamp->setDoubleValue(absoluteDeadline);
         //SORTED
         queueTemp.insert(bitWise);
         bornTimeStamp.insert(timeStamp);
