@@ -63,6 +63,7 @@ void EtherCatMACMaster::initialize()
         setStart=true;
         sched=0;
         miss=0;
+        probability=par("probability");
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -390,6 +391,15 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 void EtherCatMACMaster::finish(){
 
+    std::ofstream myfile;
+    myfile.open("data.dat",std::ios::app);
+    myfile<<type10<<" prob: "<<probability<<"\n";
+    myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
+    myfile << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
+    myfile << "%total:" <<  type10 << "\n";
+
+
+    myfile.close();
 
 
         ev << "Preamble:" << type1   << "\n";

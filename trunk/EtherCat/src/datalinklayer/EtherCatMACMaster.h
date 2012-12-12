@@ -17,6 +17,7 @@
 #define __ETHERCAT_ETHERCATMACMASTER_H_
 
 #include <omnetpp.h>
+#include <fstream>
 #include "EthernetFrame_m.h"
 
 #include "../applicationlayer/EtherCatFrame_m.h"
@@ -63,6 +64,8 @@ class EtherCatMACMaster : public cSimpleModule
 
       int sched;
       int miss;
+
+      double probability;
 
   public:
 
