@@ -370,6 +370,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    type10++;
                    cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
                    queueSched.insert(now);
+                   cMsgPar *diff=new cMsgPar("diff");
+                   diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
+                   diffDeadTimestamp.insert(diff);
                    if(now->timestamp.dbl()<deadlineValue){
                        sched++;
                    }
@@ -378,21 +381,24 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    }
                }
                if(scenario==2){
-                  cMsgPar *timeStamp=&msg->par("timeStamp");
-                  double deadlineValue=timeStamp->doubleValue();
+                  cMsgPar *deadline=&msg->par("deadl");
+                  double deadlineValue=deadline->doubleValue();
                   if(deadlineValue!=0.0){
-                  type10++;
-                  cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
-                  queueSched.insert(now);
-                  if(now->timestamp.dbl()<deadlineValue){
-                      sched++;
-                  }
-                  else miss++;
+                      type10++;
+                      cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
+                      queueSched.insert(now);
+                      if(now->timestamp.dbl()<deadlineValue){
+                          sched++;
+                      }
+                      else miss++;
+                      cMsgPar *diff=new cMsgPar("diff");
+                      diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
+                      diffDeadTimestamp.insert(diff);
                   //queue.insert(deadl->dup());
                   }
-                   cMsgPar *deadl=&msg->par("cmd");
-                   queue.insert(deadl->dup());
-                   ev << "\n\n\n\n.---------->>>>"<<deadl->stringValue()<<"\n\n\n\n";
+                   cMsgPar *cmd=&msg->par("cmd");
+                   queue.insert(cmd->dup());
+                   ev << "\n\n\n\n.---------->>>>"<<cmd->stringValue()<<"\n\n\n\n";
                }
            }
        }
@@ -404,7 +410,7 @@ void EtherCatMACMaster::finish(){
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
-    myfile << probability <<" "<<(double) ((double)miss/(double)type10)*100<<"\n";
+    myfile << probability <<" "<<(double) ((double)sched/(double)type10)*100<<"\n";
 
     //myfile<<type10<<" prob: "<<probability<<"\n";
     //myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
@@ -522,6 +528,15 @@ void EtherCatMACMaster::finish(){
                 }
 
         }
+        EV <<"]\n";
+          EV <<"LISTA DEADLINE-TIMESTAMP CONFRONTO:[";
+          for(int i=0;i<diffDeadTimestamp.length();i++){
+             cMsgPar *par= check_and_cast<cMsgPar*>(diffDeadTimestamp.get(i));
+             EV <<  par->doubleValue();
+             if(i+1<diffDeadTimestamp.length()){
+                 EV << ",";
+             }
+         }
         if(scenario==2){
                 for(int i=0;i<queue.length();i++){
                     cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));

@@ -37,6 +37,7 @@ class EtherCatMACMaster : public cSimpleModule
       cQueue queueTimeStampFinishSend; // quando parte l'ultimo pacchetto della prima frame
       cQueue queueTimeStampCameBack;
       cQueue queueTimeStampCameBackFinish;
+      cQueue diffDeadTimestamp;
       int nFrameToSend;
       bool setCameBack;
       bool setStart;
