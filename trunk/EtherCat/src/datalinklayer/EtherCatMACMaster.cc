@@ -378,7 +378,18 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    }
                }
                if(scenario==2){
-
+                  cMsgPar *timeStamp=&msg->par("timeStamp");
+                  double deadlineValue=timeStamp->doubleValue();
+                  if(deadlineValue!=0.0){
+                  type10++;
+                  cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
+                  queueSched.insert(now);
+                  if(now->timestamp.dbl()<deadlineValue){
+                      sched++;
+                  }
+                  else miss++;
+                  //queue.insert(deadl->dup());
+                  }
                    cMsgPar *deadl=&msg->par("cmd");
                    queue.insert(deadl->dup());
                    ev << "\n\n\n\n.---------->>>>"<<deadl->stringValue()<<"\n\n\n\n";
@@ -393,7 +404,7 @@ void EtherCatMACMaster::finish(){
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
-    myfile << probability << (double) ((double)miss/(double)type10)*100;
+    myfile << probability <<" "<<(double) ((double)miss/(double)type10)*100<<"\n";
 
     //myfile<<type10<<" prob: "<<probability<<"\n";
     //myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
@@ -416,11 +427,9 @@ void EtherCatMACMaster::finish(){
         ev << "FCS:" <<      type7   << "\n";
         ev << "byteReturn:" << byteReturn << "\n";
         ev << "valueData:" <<  this->valueData << "\n";
-        if(scenario==1){
-            ev << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
-            ev << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
-            ev << "%total:" <<  type10 << "\n";
-        }
+        ev << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
+        ev << "%miss:" <<  (double)((double)miss/(double)type10)*100<<"%\n";
+        ev << "%total:" <<  type10 << "\n";
 
         EV <<"TIMESTAMP START FRAME["<<queueTimeStamp.length()<<"]:[";
         for(int i=0;i<queueTimeStamp.length();i++){
