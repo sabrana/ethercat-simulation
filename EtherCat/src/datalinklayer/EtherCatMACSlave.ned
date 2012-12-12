@@ -9,6 +9,10 @@ simple EtherCatMACSlave
         double time1;
         double time2;
         double time3;
+        bool setLevel;
+        bool level1;
+		bool level2;
+		bool level3;
         int percHigh;
     	int percMedium;
         int scenario=default(1);

@@ -44,6 +44,8 @@ class EtherCatMACSlave : public cSimpleModule
     bool level2;
     bool level3;
 
+    bool setLevel;
+
     int globalPacket;
     bool enable_arb_pen;
     bool swapper;
