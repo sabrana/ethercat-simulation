@@ -64,6 +64,11 @@ void EtherCatMACMaster::initialize()
         sched=0;
         miss=0;
         probability=par("probability");
+
+        time3=par("time3");
+        time2=par("time2");
+        time1=par("time1");
+
 }
 
 void EtherCatMACMaster::handleMessage(cMessage *msg)
@@ -410,7 +415,7 @@ void EtherCatMACMaster::finish(){
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
-    myfile << probability <<" "<<(double) ((double)sched/(double)type10)*100<<"\n";
+    myfile << time3 <<" "<<(double) ((double)sched/(double)type10)*100<<" "<<sched<<" "<<miss<<" "<<type10<<"\n";
 
     //myfile<<type10<<" prob: "<<probability<<"\n";
     //myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
