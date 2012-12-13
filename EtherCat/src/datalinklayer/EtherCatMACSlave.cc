@@ -45,6 +45,8 @@ void EtherCatMACSlave::initialize()
     underControl=false;
     indice=par("indice");
 
+
+
     //priority del nodo
     for(int i=0;i<8;i++){
         int random=uniform (0,100);
@@ -310,8 +312,10 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 }
 
 void EtherCatMACSlave::queueGenerator(){
-    double random=uniform (0.00000 , 100.00000,0.00001);
-    if(random>=prob)
+
+    double random1=uniform (1 ,100000000000,0);
+    random1=random1/100000000;
+    if(random1>prob)
         return;
 
     if(scenario==1){
