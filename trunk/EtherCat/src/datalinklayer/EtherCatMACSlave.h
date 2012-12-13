@@ -19,6 +19,7 @@
 #include <omnetpp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
 
 /**
  * TODO - Generated class
@@ -36,6 +37,8 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queueSched;
     cQueue timeStampQueue;
     cQueue bornTimeStamp;
+
+    cQueue randomQueue;
 
     int percHigh;
     int percMedium;
