@@ -47,6 +47,7 @@ void EtherCatMACSlave::initialize()
 
 
 
+
     //priority del nodo
     for(int i=0;i<8;i++){
         int random=uniform (0,100);
@@ -313,11 +314,17 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
 
 void EtherCatMACSlave::queueGenerator(){
 
-    double random1=uniform (1 ,100000000000,0);
-    random1=random1/100000000;
+    double random1=uniform(0,99,0);
+    random1=random1/100;
+    int random2=uniform(0,99,0);
+    double random3=random2+random1;
+    cMsgPar *rdom=new cMsgPar("randomN");
+    rdom->setDoubleValue(random3);
+
     if(random1>prob)
         return;
 
+    randomQueue.insert(rdom);
     if(scenario==1){
         int random=uniform (0,100);
 
@@ -527,6 +534,19 @@ bool EtherCatMACSlave::test(const char* a,const char* b){
 
 
 void EtherCatMACSlave::finish(){
+        /*
+        std::ofstream myfile;
+        myfile.open("node.dat",std::ios::app);
+        for(int i=0;i<randomQueue.length();i++){
+               cMsgPar *par= check_and_cast<cMsgPar*>(randomQueue.get(i));
+               myfile <<  par->doubleValue();
+               if(i+1<randomQueue.length()){
+                   myfile << "\n";
+               }
+       }
+        myfile.close();
+        */
+
 
         EV << "### NODE: "<< indice<<"\n";
         EV << "level1 active: "<< level1<<"\n";

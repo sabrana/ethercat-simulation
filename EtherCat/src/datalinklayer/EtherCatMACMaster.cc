@@ -415,7 +415,7 @@ void EtherCatMACMaster::finish(){
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
-    myfile<<"time:" << time3 <<" "<<"prob: "<< probability << " perc: "<<(double) ((double)sched/(double)type10)*100<<" "<<sched<<" "<<miss<<" "<<type10<<"\n";
+    myfile<< nFrameToSend << " "<<nGlobalFrame << " "<<time1 <<" "<< time2<<" " << time3 <<" "<< probability << " "<<(double) ((double)sched/(double)type10)*100<<" "<<sched<<" "<<miss<<" "<<type10<<"\n";
 
     //myfile<<type10<<" prob: "<<probability<<"\n";
     //myfile << "%sched:" <<  (double) ((double)sched/(double)type10)*100<<"%\n";
