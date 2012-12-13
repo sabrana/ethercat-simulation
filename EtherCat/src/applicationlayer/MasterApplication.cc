@@ -36,7 +36,7 @@ void MasterApplication::initialize()
 
 
     for(int i=1;i<=npdu;i++){
-        int dimPDU=100;//uniform(13,dim_max_pdu);
+        int dimPDU=dim_max_pdu;//100;//uniform(13,dim_max_pdu);
 
         payload->getPdu(i).LEN=dimPDU;
         //setto i valori degli indirizzi sequenziali
