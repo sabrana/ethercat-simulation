@@ -12,6 +12,10 @@ simple EtherCatMACMaster
         double probability=default(0.1);
         int nFrameToSend;
         int typeOfDeadline;//relative=1,absolute=2
+        double time3;
+        double time2;
+        double time1;
+        
 	gates:
 		inout phys;
 		input upperLayerIn;

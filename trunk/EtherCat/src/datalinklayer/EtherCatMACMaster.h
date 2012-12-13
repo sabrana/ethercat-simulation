@@ -66,6 +66,10 @@ class EtherCatMACMaster : public cSimpleModule
       int sched;
       int miss;
 
+      double time1;
+      double time2;
+      double time3;
+
       double probability;
 
   public:

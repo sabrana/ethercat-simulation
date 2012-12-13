@@ -1,1 +1,1 @@
--g -Wall   -I/usr/include -fno-stack-protector -DXMLPARSER=libxml -DWITH_PARSIM -DWITH_NETBUILDER  -I. -Iapplicationlayer -Idatalinklayer -Iphysicallayer -Ic:/Omnet++/omnetpp-4.2.2/include
+-g -Wall   -fno-stack-protector  -DHAVE_PCAP -DXMLPARSER=libxml -DWITH_PARSIM -DWITH_NETBUILDER  -I. -Iapplicationlayer -Idatalinklayer -Iphysicallayer -Iresults -I/Library/omnetpp-4.2.2/include
