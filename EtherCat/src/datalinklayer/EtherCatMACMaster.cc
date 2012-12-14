@@ -534,14 +534,18 @@ void EtherCatMACMaster::finish(){
 
         }
         EV <<"]\n";
+         std::ofstream myfiledelta;
+         myfiledelta.open("delta.dat",std::ios::app);
           EV <<"LISTA DEADLINE-TIMESTAMP CONFRONTO:[";
           for(int i=0;i<diffDeadTimestamp.length();i++){
              cMsgPar *par= check_and_cast<cMsgPar*>(diffDeadTimestamp.get(i));
-             EV <<  par->doubleValue();
+             myfiledelta<< nFrameToSend << " "<<nGlobalFrame << " "<<time1 <<" "<< time2<<" " << time3 <<" "<< probability <<" " <<par->doubleValue();
              if(i+1<diffDeadTimestamp.length()){
-                 EV << ",";
+                  myfiledelta << "\n";
              }
          }
+
+
         if(scenario==2){
                 for(int i=0;i<queue.length();i++){
                     cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
