@@ -1,17 +1,17 @@
-//
+///
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
 #include "EtherCatMACMaster.h"
 #include "EthernetFrame_m.h"
@@ -63,6 +63,7 @@ void EtherCatMACMaster::initialize()
         setStart=true;
         sched=0;
         miss=0;
+        globalPacket=0;
         probability=par("probability");
 
         time3=par("time3");
@@ -372,18 +373,29 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                    cMsgPar *deadl=&msg->par("deadl");
                    double deadlineValue=deadl->doubleValue();
                    if(deadlineValue!=0.0){
-                   type10++;
-                   cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
-                   queueSched.insert(now);
-                   cMsgPar *diff=new cMsgPar("diff");
-                   diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
-                   diffDeadTimestamp.insert(diff);
-                   if(now->timestamp.dbl()<deadlineValue){
-                       sched++;
+                       type10++;
+
+                       cMsgPar *global=new cMsgPar("Global");
+                       global->setLongValue(globalPacket);
+                       globalFrames.insert(global);
+
+                       cMsgPar *globalValue=new cMsgPar("GlobalValue");
+                       globalValue->setDoubleValue(deadlineValue);
+                       globalFrameDeadline.insert(globalValue);
+
+
+                       cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
+                       queueSched.insert(now);
+                       cMsgPar *diff=new cMsgPar("diff");
+                       diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
+                       diffDeadTimestamp.insert(diff);
+                       if(now->timestamp.dbl()<deadlineValue){
+                           sched++;
+                       }
+                       else miss++;
+                       queue.insert(deadl->dup());
                    }
-                   else miss++;
-                   queue.insert(deadl->dup());
-                   }
+                   globalPacket++;
                }
                if(scenario==2){
                   cMsgPar *deadline=&msg->par("deadl");
@@ -392,6 +404,8 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                       type10++;
                       cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
                       queueSched.insert(now);
+
+
                       if(now->timestamp.dbl()<deadlineValue){
                           sched++;
                       }
@@ -544,6 +558,33 @@ void EtherCatMACMaster::finish(){
                   myfiledelta << "\n";
              }
          }
+          myfiledelta <<"]\n";
+          std::ofstream myfilesched;
+          myfilesched.open("packetSched.dat",std::ios::app);
+          myfilesched <<"GLOBAL FRAME USATI:[";
+            for(int i=0;i<globalFrames.length();i++){
+               cMsgPar *par= check_and_cast<cMsgPar*>(globalFrames.get(i));
+               myfilesched << par->longValue();
+               if(i+1<globalFrames.length()){
+                   myfilesched << ",";
+               }
+          }
+
+          myfilesched <<"]\n";
+
+
+            myfilesched <<"GLOBAL FRAME VALORI:[";
+              for(int i=0;i<globalFrameDeadline.length();i++){
+                 cMsgPar *par= check_and_cast<cMsgPar*>(globalFrameDeadline.get(i));
+                 myfilesched << par->doubleValue();
+                 if(i+1<globalFrameDeadline.length()){
+                     myfilesched << ",";
+                 }
+            }
+
+            myfilesched <<"]\n";
+
+
 
 
         if(scenario==2){
@@ -561,6 +602,3 @@ void EtherCatMACMaster::finish(){
         }
         EV <<"]";
     }
-
-
-
