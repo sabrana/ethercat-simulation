@@ -267,7 +267,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
             EV << "confronto il frame passante:"<<deadlValue<<" , la testa vale:"<< queueHead->doubleValue() << "\n";
             //CASO IN CUI VADO A SCRIVERE NELLA FRAME
             if(deadlValue==0.0 || deadlValue>queueHead->doubleValue()){
-                cMsgPar *global=new cMsgPar("global");
+                    cMsgPar *global=new cMsgPar("global");
                     global->setLongValue(globalPacket);
                     globalMatch.insert(global);
                     // mi conservo il valore del timeStamp della frame
@@ -335,7 +335,7 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                        // richieste aperiodiche.
                    }
                    else{*/
-                       underControl=true;
+                     underControl=true;
                    //}
 
                     /*
@@ -441,8 +441,10 @@ void EtherCatMACSlave::queueGenerator(int globalFrame){
             bitWise->setStringValue(h3);
             absoluteDeadline=simTime().dbl()+time3;
         }
-        else
+        else{
             return;
+        }
+
         cMsgPar *timeStamp=new cMsgPar("timestamp");
         timeStamp->setDoubleValue(absoluteDeadline);
         //SORTED
