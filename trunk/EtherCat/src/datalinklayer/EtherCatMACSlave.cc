@@ -191,9 +191,9 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     if(!underControl){
         return false;
     }
-    if(scenario==1)
+    if(scenario==1){
         return false;
-
+    }
     cMsgPar *timeStamp=&msg->par("timeStamp");
     double timeStampValue=timeStamp->doubleValue();
     if(timeStampValue==timeStart){
@@ -211,13 +211,16 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     // se siamo arrivati qui significa che stiamo controllando la frame giusta
     // sia che vinco sia che perdo, posso ripartecipare alle contese
     underControl=false;
-
+    /*
     if(scenario==1){
         if(queue.length()>0){
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
             double queueHeadValue=queueHead->doubleValue();
             cMsgPar *deadl=&msg->par("deadl");
             double deadlineValue=deadl->doubleValue();
+
+
+
             EV << "confronto Se ho vinto, la testa vale:"<< queueHead->doubleValue() << "\n";
             if(queueHeadValue==deadlineValue){
                 nContestWin++;
@@ -225,7 +228,7 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
                 return true;
             }
         }
-    }
+    }*/
     if(scenario==2){
         if(queue.length()>0){
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
@@ -264,32 +267,35 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
             EV << "confronto il frame passante:"<<deadlValue<<" , la testa vale:"<< queueHead->doubleValue() << "\n";
             //CASO IN CUI VADO A SCRIVERE NELLA FRAME
             if(deadlValue==0.0 || deadlValue>queueHead->doubleValue()){
+                cMsgPar *global=new cMsgPar("global");
+                    global->setLongValue(globalPacket);
+                    globalMatch.insert(global);
+                    // mi conservo il valore del timeStamp della frame
+                    // in maniera tale da poterla riconoscere al suo ritorno.
+                    cMsgPar *timeStamp=&msg->par("timeStamp");
+                    double timeStampValue=timeStamp->doubleValue();
+                    timeStart=timeStampValue;
 
-                // mi conservo il valore del timeStamp della frame
-                // in maniera tale da poterla riconoscere al suo ritorno.
-                cMsgPar *timeStamp=&msg->par("timeStamp");
-                double timeStampValue=timeStamp->doubleValue();
-                timeStart=timeStampValue;
-
-                /*
-                cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
-                timeStart= timeStamp->timestamp;//timeStampValue;
-                */
-                // setto una flag in maniera tale da non scrivere niente nelle frame successive
-                myfile << "---------->PRE SWAPPER\n";
-                //if(swapper){
-
+                    /*
+                    cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
+                    timeStart= timeStamp->timestamp;//timeStampValue;
+                    */
+                    // setto una flag in maniera tale da non scrivere niente nelle frame successive
+                    myfile << "---------->PRE SWAPPER\n";
+                    //if(swapper){
                     queueSched.insert(queue.pop());
                     myfile << "queue Sched"<<queueSched.length()<<"\n";
                     if(deadlValue!=0.0){
                         sortQueue(deadl);
                     }// inserisco questo valore
-                //}
-                else{
-                    underControl=true;
-                }
-                EV << "I'm EtherCatMACSlave "<< indice<<" And I win the context and I write:" << queueHead->doubleValue() << "\n";
-                deadl->setDoubleValue(queueHead->doubleValue());
+                    //}
+                    /*
+                    else{
+                        underControl=true;
+                    }*/
+                    EV << "I'm EtherCatMACSlave "<< indice<<" And I win the context and I write:" << queueHead->doubleValue() << "\n";
+                    deadl->setDoubleValue(queueHead->doubleValue());
+
             }
         }
     }
@@ -306,6 +312,9 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                 */
                 cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(0));
                 if( bitWiseValue > par->stringValue()){
+                   cMsgPar *global=new cMsgPar("global");
+                   global->setLongValue(globalPacket);
+                   globalMatch.insert(global);
                     // mi conservo il valore del timeStamp della frame
                     // in maniera tale da poterla riconoscere al suo ritorno.
 
@@ -357,8 +366,9 @@ void EtherCatMACSlave::queueGenerator(int globalFrame){
     cMsgPar *rdom=new cMsgPar("randomN");
     rdom->setDoubleValue(random3);
 
-    if(random1>prob)
+    if(random1>prob){
         return;
+    }
     std::ofstream myfile;
     myfile.open("generatori.dat",std::ios::app);
     myfile << "node:"<< indice << "timeStamp"<< simTime()<<"\nglobalFrame:"<< globalFrame<<"\n";
@@ -664,32 +674,49 @@ void EtherCatMACSlave::finish(){
                    myfile << ",";
                }
            }
-            EV <<"]\n\n";
-            myfile <<"]\n\n";
+           EV <<"]\n";
+           myfile <<"]\n";
+           myfile <<"LISTA MATCH GLOBAL:["<<globalMatch.length()<<"]: [";
+           for(int i=0;i<globalMatch.length();i++){
+              cMsgPar *par= check_and_cast<cMsgPar*>(globalMatch.get(i));
+              myfile <<  par->longValue();
+              if(i+1<globalMatch.length()){
+                  myfile << ",";
+              }
+          }
+           myfile <<"]\n\n";
+
 
         }
         if(scenario==2){
             EV <<"LISTA FRAME GENERATE:[";
+            myfile << "LISTA FRAME GENERATE:[";
             for(int i=0;i<queueTemp.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queueTemp.get(i));
                 for(int k=0;k<16;k++){
                     EV <<  par->stringValue()[k];
+                    myfile << par->stringValue()[k];
                 }
                 if(i+1<queueTemp.length()){
                     EV << ",";
+                    myfile << ",";
                 }
             }
             EV <<"]\n";
+            myfile <<"]\n";
             EV <<"LISTA FRAME SCHEDULATE:[";
+            myfile << "LISTA FRAME SCHEDULATE:[";
             for(int i=0;i<queueSched.length();i++){
                 cMsgPar *par= check_and_cast<cMsgPar*>(queueSched.get(i));
                 for(int k=0;k<16;k++){
                     EV <<  par->stringValue()[k];
+                    myfile <<  par->stringValue()[k];
                 }
                 if(i+1<queueSched.length()){
                     EV << ",";
+                    myfile <<  ",";
                 }
-            }
+            }/*
             EV <<"]\n";
             EV <<"LISTA FRAME RIMASTE IN CODA:[";
             for(int i=0;i<queue.length();i++){
@@ -700,25 +727,60 @@ void EtherCatMACSlave::finish(){
                 if(i+1<queue.length()){
                     EV << ",";
                 }
-            }
+            }*/
             EV <<"]\n";
-               EV <<"LISTA BORN TIMESTAMP CONFRONTO:[";
+            myfile <<"]\n";
+            EV <<"LISTA FRAME RIMASTE IN CODA:[";
+            myfile <<"LISTA FRAME RIMASTE IN CODA:["<<queue.length()<<"]: [";
+            for(int i=0;i<queue.length();i++){
+               cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
+               for(int k=0;k<16;k++){
+                   EV <<  par->stringValue()[k];
+                   myfile << par->stringValue()[k];
+               }
+               if(i+1<queue.length()){
+                   EV << ",";
+                   myfile << ",";
+               }
+           }
+            EV <<"]\n";
+            myfile << "]\n";
+            EV <<"LISTA BORN TIMESTAMP CONFRONTO:[";
+            myfile << "LISTA BORN TIMESTAMP CONFRONTO:[";
                for(int i=0;i<bornTimeStamp.length();i++){
                   cMsgPar *par= check_and_cast<cMsgPar*>(bornTimeStamp.get(i));
                   EV <<  par->doubleValue();
+                  myfile <<  par->doubleValue();
                   if(i+1<bornTimeStamp.length()){
                       EV << ",";
+                      myfile <<  ",";
                   }
               }
             EV <<"]\n";
-                EV <<"LISTA TIMESTAMP CONFRONTO:[";
+            myfile << "]\n";
+            EV <<"LISTA TIMESTAMP CONFRONTO:[";
+            myfile << "LISTA TIMESTAMP CONFRONTO:[";
                 for(int i=0;i<timeStampQueue.length();i++){
                    cMsgPar *par= check_and_cast<cMsgPar*>(timeStampQueue.get(i));
                    EV <<  par->doubleValue();
+                   myfile <<  par->doubleValue();
                    if(i+1<timeStampQueue.length()){
                        EV << ",";
+                       myfile << ",";
                    }
                }
+                EV <<"]\n";
+                myfile <<
+              myfile <<"]\n";
+              myfile <<"LISTA MATCH GLOBAL:["<<globalMatch.length()<<"]: [";
+              for(int i=0;i<globalMatch.length();i++){
+                 cMsgPar *par= check_and_cast<cMsgPar*>(globalMatch.get(i));
+                 myfile <<  par->longValue();
+                 if(i+1<globalMatch.length()){
+                     myfile << ",";
+                 }
+             }
+              myfile <<"]\n\n";
 
 
 
