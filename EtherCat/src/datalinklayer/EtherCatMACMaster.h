@@ -39,6 +39,7 @@ class EtherCatMACMaster : public cSimpleModule
       cQueue queueTimeStampCameBackFinish;
       cQueue diffDeadTimestamp;
       cQueue globalFrameDeadline;
+      cQueue globalFrameValue;
       cQueue globalFrames;
       cQueue globalZero;
 

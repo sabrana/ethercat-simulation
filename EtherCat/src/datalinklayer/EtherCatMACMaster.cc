@@ -399,6 +399,7 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                }
                if(scenario==2){
                   cMsgPar *deadline=&msg->par("deadl");
+                  cMsgPar *cmd=&msg->par("cmd");
                   double deadlineValue=deadline->doubleValue();
                   if(deadlineValue!=0.0){
                       type10++;
@@ -409,8 +410,9 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                       global->setLongValue(globalPacket);
                       globalFrames.insert(global);
 
-                      cMsgPar *cmd=&msg->par("cmd");
-                      globalFrameDeadline.insert(cmd);
+
+                      //cMsgPar *cmd=&msg->par("cmd");
+                      //globalFrameValue.insert(cmd->dup());
 
                       if(now->timestamp.dbl()<deadlineValue){
                           sched++;
@@ -420,11 +422,11 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                       cMsgPar *diff=new cMsgPar("diff");
                       diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
                       diffDeadTimestamp.insert(diff);
-                  //queue.insert(deadl->dup());
+                      //queue.insert(deadl->dup());
+                      queue.insert(cmd->dup());
                   }
                    globalPacket++;
-                   cMsgPar *cmd=&msg->par("cmd");
-                   queue.insert(cmd->dup());
+
                    ev << "\n\n\n\n.---------->>>>"<<cmd->stringValue()<<"\n\n\n\n";
                }
            }
@@ -434,6 +436,8 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
 
 
 void EtherCatMACMaster::finish(){
+
+
 
     std::ofstream myfile;
     myfile.open("data.dat",std::ios::app);
@@ -580,6 +584,7 @@ void EtherCatMACMaster::finish(){
 
           myfilesched <<"]\n";
 
+
           if(scenario==1){
             myfilesched <<"GLOBAL FRAME VALORI:[";
               for(int i=0;i<globalFrameDeadline.length();i++){
@@ -596,30 +601,23 @@ void EtherCatMACMaster::finish(){
 
 
         if(scenario==2){
+           std::ofstream myfilesched2;
+           myfilesched2.open("packetSched.dat",std::ios::app);
+           myfilesched2 <<"GLOBAL FRAME VALORI:[";
                 for(int i=0;i<queue.length();i++){
                     cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(i));
                     for(int k=0;k<16;k++){
                         EV <<  par->stringValue()[k];
+                        myfilesched2 <<  par->stringValue()[k];
                     }
                     if(i+1<queue.length()){
                         EV << ",";
+                        myfilesched2 <<  ",";
                     }
                 }
 
                 EV <<"]\n";
+                myfilesched2<<"]\n";
         }
         EV <<"]";
-        myfilesched <<"GLOBAL FRAME VALORI:[";
-              for(int i=0;i<globalFrameDeadline.length();i++){
-                  cMsgPar *par= check_and_cast<cMsgPar*>(globalFrameDeadline.get(i));
-                  for(int k=0;k<16;k++){
-                      EV <<  par->stringValue()[k];
-                      myfile <<  par->stringValue()[k];
-                  }
-                  if(i+1<globalFrameDeadline.length()){
-                      EV << ",";
-                      myfile <<  ",";
-                  }
-                    }
-        myfilesched <<"]\n";
-    }
+ }

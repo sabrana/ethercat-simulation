@@ -196,9 +196,9 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     }
     cMsgPar *timeStamp=&msg->par("timeStamp");
     double timeStampValue=timeStamp->doubleValue();
-    if(timeStampValue==timeStart){
+    /*if(timeStampValue==timeStart){
             return false;
-    }
+    }*/
 
     // verifico che sto confrontando lo stesso frame che ho settato in partenza
 
@@ -210,7 +210,7 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     */
     // se siamo arrivati qui significa che stiamo controllando la frame giusta
     // sia che vinco sia che perdo, posso ripartecipare alle contese
-    underControl=false;
+
     /*
     if(scenario==1){
         if(queue.length()>0){
@@ -238,6 +238,10 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
             cMsgPar *deadl=&msg->par("deadl");
             std::string bitWiseValue=bitWise->stringValue();
             EV << "confronto Se ho vinto, la testa vale:"<< stringValue << " e il valore "<<bitWiseValue  <<"\n";
+            if(queueTimeStampHead->doubleValue()==deadl->doubleValue())
+             {
+                    underControl=false;
+             }
             if(stringValue==bitWiseValue && (queueTimeStampHead->doubleValue()==deadl->doubleValue())){
                 nContestWin++;
                 queueSched.insert(queue.pop());
