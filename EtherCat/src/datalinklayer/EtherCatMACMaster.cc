@@ -405,16 +405,24 @@ void EtherCatMACMaster::handleMessage(cMessage *msg)
                       cTimestampedValue *now=new cTimestampedValue(simTime(),1.0);
                       queueSched.insert(now);
 
+                      cMsgPar *global=new cMsgPar("Global");
+                      global->setLongValue(globalPacket);
+                      globalFrames.insert(global);
+
+                      cMsgPar *cmd=&msg->par("cmd");
+                      globalFrameDeadline.insert(cmd);
 
                       if(now->timestamp.dbl()<deadlineValue){
                           sched++;
                       }
                       else miss++;
+
                       cMsgPar *diff=new cMsgPar("diff");
                       diff->setDoubleValue(deadlineValue-now->timestamp.dbl());
                       diffDeadTimestamp.insert(diff);
                   //queue.insert(deadl->dup());
                   }
+                   globalPacket++;
                    cMsgPar *cmd=&msg->par("cmd");
                    queue.insert(cmd->dup());
                    ev << "\n\n\n\n.---------->>>>"<<cmd->stringValue()<<"\n\n\n\n";
@@ -572,7 +580,7 @@ void EtherCatMACMaster::finish(){
 
           myfilesched <<"]\n";
 
-
+          if(scenario==1){
             myfilesched <<"GLOBAL FRAME VALORI:[";
               for(int i=0;i<globalFrameDeadline.length();i++){
                  cMsgPar *par= check_and_cast<cMsgPar*>(globalFrameDeadline.get(i));
@@ -583,7 +591,7 @@ void EtherCatMACMaster::finish(){
             }
 
             myfilesched <<"]\n";
-
+          }
 
 
 
@@ -601,4 +609,17 @@ void EtherCatMACMaster::finish(){
                 EV <<"]\n";
         }
         EV <<"]";
+        myfilesched <<"GLOBAL FRAME VALORI:[";
+              for(int i=0;i<globalFrameDeadline.length();i++){
+                  cMsgPar *par= check_and_cast<cMsgPar*>(globalFrameDeadline.get(i));
+                  for(int k=0;k<16;k++){
+                      EV <<  par->stringValue()[k];
+                      myfile <<  par->stringValue()[k];
+                  }
+                  if(i+1<globalFrameDeadline.length()){
+                      EV << ",";
+                      myfile <<  ",";
+                  }
+                    }
+        myfilesched <<"]\n";
     }
