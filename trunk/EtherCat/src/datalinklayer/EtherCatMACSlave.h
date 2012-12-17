@@ -37,8 +37,10 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue queueSched;
     cQueue timeStampQueue;
     cQueue bornTimeStamp;
-
     cQueue randomQueue;
+
+    cQueue timestampQueueSize;
+    cQueue timestampQueue0;
 
     int percHigh;
     int percMedium;
@@ -53,6 +55,11 @@ class EtherCatMACSlave : public cSimpleModule
     bool enable_arb_pen;
     bool swapper;
     int scenario;
+
+    int nGlobalFrame;
+    int nFrameToSend;
+
+
     int typeOfDeadline;//relative=1,absolute=2
     double prob;
     bool underControl; // Se ho scritto nella frame, setto una flag in maniera tale da
@@ -73,7 +80,7 @@ class EtherCatMACSlave : public cSimpleModule
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
     void setDeadlineOnFrame(cMessage *msg);
-    void queueGenerator();
+    void queueGenerator(int globalFrame);
     bool controlIfIwon(cMessage *msg);
     bool test(const char* a ,const char* b);
     int sortQueue(cMsgPar *bitWise);

@@ -19,6 +19,8 @@ simple EtherCatMACSlave
         double probability=default(50);
         int typeOfDeadline;//relative=1,absolute=2
         bool swapper=default(false);
+        int nFrameToSend;
+        int nGlobalFrame;
         //bool enable_arb_pen;
     gates:
         inout phys1;

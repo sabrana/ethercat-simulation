@@ -38,11 +38,17 @@ class EtherCatMACMaster : public cSimpleModule
       cQueue queueTimeStampCameBack;
       cQueue queueTimeStampCameBackFinish;
       cQueue diffDeadTimestamp;
+      cQueue globalFrames;
+      cQueue globalZero;
+
       int nFrameToSend;
       bool setCameBack;
       bool setStart;
       int countFCS;
       int countFCS2;
+      int globalPacket;
+
+
 
       int nGlobalFrame;
       bool enable_arb_pen;
