@@ -231,17 +231,27 @@ bool EtherCatMACSlave::controlIfIwon(cMessage *msg){
     }*/
     if(scenario==2){
         if(queue.length()>0){
+            //valore in attesa di verifica
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
             std::string stringValue= queueHead->stringValue();
+            //valore salvato nella frame
             cMsgPar *bitWise=&msg->par("cmd");
-            cMsgPar *queueTimeStampHead= check_and_cast<cMsgPar*>(timeStampQueue.get(0));
-            cMsgPar *deadl=&msg->par("deadl");
             std::string bitWiseValue=bitWise->stringValue();
+            //tempo salvato in attesa di verifica
+            cMsgPar *queueTimeStampHead= check_and_cast<cMsgPar*>(timeStampQueue.get(0));
+            //tempo salvato nella frame
+            cMsgPar *deadl=&msg->par("deadl");
+
             EV << "confronto Se ho vinto, la testa vale:"<< stringValue << " e il valore "<<bitWiseValue  <<"\n";
-            if(queueTimeStampHead->doubleValue()==deadl->doubleValue())
+            //verifico se il pacchetto che mi ritorna è quello su cui ho scritto
+            if(timeStart==timeStampValue)
              {
                     underControl=false;
              }
+            else{
+                return false;
+            }
+
             if(stringValue==bitWiseValue && (queueTimeStampHead->doubleValue()==deadl->doubleValue())){
                 nContestWin++;
                 queueSched.insert(queue.pop());
@@ -269,6 +279,9 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
         if(queue.length()>0){
             cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
             EV << "confronto il frame passante:"<<deadlValue<<" , la testa vale:"<< queueHead->doubleValue() << "\n";
+            cMsgPar *global=new cMsgPar("global");
+            global->setLongValue(globalPacket);
+            globalMatch.insert(global);
             //CASO IN CUI VADO A SCRIVERE NELLA FRAME
             if(deadlValue==0.0 || deadlValue>queueHead->doubleValue()){
                     cMsgPar *global=new cMsgPar("global");
@@ -276,9 +289,10 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     globalMatch.insert(global);
                     // mi conservo il valore del timeStamp della frame
                     // in maniera tale da poterla riconoscere al suo ritorno.
+                    /*
                     cMsgPar *timeStamp=&msg->par("timeStamp");
                     double timeStampValue=timeStamp->doubleValue();
-                    timeStart=timeStampValue;
+                    timeStart=timeStampValue;*/
 
                     /*
                     cTimestampedValue *timeStamp=(cTimestampedValue*)msg->getObject("END_PDU");
@@ -304,23 +318,35 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
         }
     }
     if(scenario==2){
-            cMsgPar *bitWise=&msg->par("cmd");
-            std::string bitWiseValue=bitWise->stringValue();
-            //EV << "I'm EtherCatMACSlave "<< node<<" And I verified the Frame, deadValue: "<< deadlValue<< " and relativeDeadLine: "<< relativeDeadline << "\n";
-
+            // se sto controllando un pacchetto non scrivo su un altro
+            if(underControl)
+                return ;
             if(queue.length()>0){
                 /* con priorità costante questa parte non c'è
                 cMsgPar *queueHead= check_and_cast<cMsgPar*>(queue.get(0));
                 std::string stringValue= queueHead->stringValue();
                 if( bitWiseValue >stringValue){
                 */
+
+                //prendo il valore conservato nella frame
+                cMsgPar *bitWise=&msg->par("cmd");
+                std::string bitWiseValue=bitWise->stringValue();
+
+                //mi conservo il contatore dei pacchetti global per partecipare alla contesa
+                cMsgPar *global=new cMsgPar("global");
+                global->setLongValue(globalPacket);
+                globalMatch.insert(global->dup());
+
+                // estrapolo il valore in testa alla queue per verificarlo
                 cMsgPar *par= check_and_cast<cMsgPar*>(queue.get(0));
                 if( bitWiseValue > par->stringValue()){
-                   cMsgPar *global=new cMsgPar("global");
-                   global->setLongValue(globalPacket);
-                   globalMatch.insert(global);
+
+                   globalMatchWin.insert(global->dup());
                     // mi conservo il valore del timeStamp della frame
                     // in maniera tale da poterla riconoscere al suo ritorno.
+                   cMsgPar *timeStamp=&msg->par("timeStamp");
+                   double timeStampValue=timeStamp->doubleValue();
+                   timeStart=timeStampValue;
 
                     //cMsgPar *timeStamp=&msg->par("timeStamp");now
                     //double timeStampValue=timeStamp->doubleValue();
@@ -348,9 +374,10 @@ void EtherCatMACSlave::setDeadlineOnFrame(cMessage *msg){
                     */
                     EV << "I'm EtherCatMACSlave "<< indice<<" And I win the context and I write:" << par->dup()->stringValue() << "\n";
                     bitWise->setStringValue(par->dup()->stringValue());
+
                     cMsgPar *deadl=&msg->par("deadl");
-                    cMsgPar *timeStamp= check_and_cast<cMsgPar*>(timeStampQueue.get(0));
-                    deadl->setDoubleValue(timeStamp->dup()->doubleValue());
+                    cMsgPar *deadline= check_and_cast<cMsgPar*>(timeStampQueue.get(0));
+                    deadl->setDoubleValue(deadline->dup()->doubleValue());
 
                 }
             }
@@ -776,7 +803,7 @@ void EtherCatMACSlave::finish(){
                    }
                }
                 EV <<"]\n";
-                myfile <<
+
               myfile <<"]\n";
               myfile <<"LISTA MATCH GLOBAL:["<<globalMatch.length()<<"]: [";
               for(int i=0;i<globalMatch.length();i++){
@@ -786,10 +813,16 @@ void EtherCatMACSlave::finish(){
                      myfile << ",";
                  }
              }
-              myfile <<"]\n\n";
-
-
-
+              myfile <<"]\n";
+              myfile <<"LISTA MATCH GLOBAL WIN:["<<globalMatchWin.length()<<"]: [";
+               for(int i=0;i<globalMatchWin.length();i++){
+                  cMsgPar *par= check_and_cast<cMsgPar*>(globalMatchWin.get(i));
+                  myfile <<  par->longValue();
+                  if(i+1<globalMatchWin.length()){
+                      myfile << ",";
+                  }
+              }
+             myfile <<"]\n";
              EV <<"]\n\n";
         }
         myfile.close();

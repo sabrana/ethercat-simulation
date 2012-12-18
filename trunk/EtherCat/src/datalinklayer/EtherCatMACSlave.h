@@ -43,6 +43,7 @@ class EtherCatMACSlave : public cSimpleModule
     cQueue timestampQueue0;
 
     cQueue globalMatch;
+    cQueue globalMatchWin;
 
 
     int percHigh;
