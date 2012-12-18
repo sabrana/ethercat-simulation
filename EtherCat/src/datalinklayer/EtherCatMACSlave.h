@@ -74,6 +74,7 @@ class EtherCatMACSlave : public cSimpleModule
                    // alla partenza della frame
     int nContestWin;
     char priority[8];// for like-can configuration
+    bool print;
 
   public:
     EtherCatMACSlave();
