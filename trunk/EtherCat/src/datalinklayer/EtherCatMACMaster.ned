@@ -15,6 +15,7 @@ simple EtherCatMACMaster
         double time3;
         double time2;
         double time1;
+        bool print;
         
 	gates:
 		inout phys;

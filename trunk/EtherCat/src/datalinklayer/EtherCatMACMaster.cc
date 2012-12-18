@@ -65,6 +65,7 @@ void EtherCatMACMaster::initialize()
         miss=0;
         globalPacket=0;
         probability=par("probability");
+        print=par("print");
 
         time3=par("time3");
         time2=par("time2");
@@ -451,7 +452,7 @@ void EtherCatMACMaster::finish(){
 
     myfile.close();
 
-
+    if(print){
         ev << "Preamble:" << type1   << "\n";
         ev << "SFD:" <<      type2   << "\n";
         ev << "DA:" <<       type3   << "\n";
@@ -620,4 +621,5 @@ void EtherCatMACMaster::finish(){
                 myfilesched2<<"]\n";
         }
         EV <<"]";
+    }
  }

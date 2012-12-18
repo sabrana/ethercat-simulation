@@ -49,6 +49,7 @@ class EtherCatMACMaster : public cSimpleModule
       int countFCS;
       int countFCS2;
       int globalPacket;
+      bool print;
 
 
 

@@ -45,6 +45,7 @@ void EtherCatMACSlave::initialize()
     globalPacket=0;
     underControl=false;
     indice=par("indice");
+    print=par("print");
 
     nGlobalFrame=par("nGlobalFrame");
     nFrameToSend=par("nFrameToSend");
@@ -635,6 +636,7 @@ bool EtherCatMACSlave::test(const char* a,const char* b){
 
 void EtherCatMACSlave::finish(){
 
+    if(print){
         std::ofstream myfile;
         myfile.open("node.dat",std::ios::app);
         for(int i=0;i<timestampQueueSize.length();i++){
@@ -826,5 +828,5 @@ void EtherCatMACSlave::finish(){
              EV <<"]\n\n";
         }
         myfile.close();
-
+    }
 }

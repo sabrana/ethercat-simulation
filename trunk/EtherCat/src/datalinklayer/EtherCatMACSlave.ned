@@ -21,6 +21,7 @@ simple EtherCatMACSlave
         bool swapper=default(false);
         int nFrameToSend;
         int nGlobalFrame;
+        bool print;
         //bool enable_arb_pen;
     gates:
         inout phys1;
