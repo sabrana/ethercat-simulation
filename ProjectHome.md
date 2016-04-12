@@ -1,0 +1,1 @@
+This project is an Omnet Simulation of EtherCat Fieldbus developed for University of Catania.
